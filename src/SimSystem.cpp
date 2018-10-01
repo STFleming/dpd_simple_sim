@@ -23,7 +23,7 @@ SimSystem::SimSystem(unsigned N, unsigned D, unsigned verbosity) {
                 // create a SpatialUnit and add it to the cubes
                 if(_verbosity >= 3)
                     printf("Constructing a cube (size=%d) at x:%d, y:%d, z:%d\n", (_N/_D), x, y, z);
-                _cubes->push_back(new SpatialUnit((_N/_D), x,y,z)); // Add a new cube of size _N/_D at x,y,z
+                _cubes->push_back(new SpatialUnit((_N/_D), x,y,z, _verbosity)); // Add a new cube of size _N/_D at x,y,z
             }
         }
     }

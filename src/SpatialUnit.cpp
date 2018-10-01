@@ -1,15 +1,21 @@
 #include "SpatialUnit.hpp"
 
 /**! Constructor: creates a problem of NxNxN cubes */
-SpatialUnit::SpatialUnit(unsigned size, uint16_t x, uint16_t y, uint16_t z) {
+SpatialUnit::SpatialUnit(unsigned size, uint16_t x, uint16_t y, uint16_t z, unsigned verbosity) {
     _size = size;
     _center.x = x;
     _center.y = y;
     _center.z = z;
+    _verbosity = verbosity;
+    
+    // create the heap vector of particles
+    _particles = new std::vector<Particle *>();
 }
 
 /**! Destructor: cleans up the particles */
 SpatialUnit::~SpatialUnit() {
+   // TODO iterate through all the particles and delete them
+   // TODO delete the vector of particles
 
 }
 
@@ -29,6 +35,8 @@ void SpatialUnit::addParticle(Particle* p) {
    // first check to make sure that we can actually add a particle
    if(checkPos(p->getPos())) {
        _particles->push_back(p); // add the particle 
+       if(_verbosity >= 2)
+           printf("    spatial unit center=(x:%d,y:%d,z:%d) is hosting a particle at pos=(x:%d, y:%d, z:%d)\n", _center.x, _center.y, _center.z, p->getPos().x, p->getPos().y, p->getPos().z);
    } else {
      std::runtime_error("Error: this particle cannot fit in within this cube!\n"); 
    } 
