@@ -7,6 +7,9 @@
 #include <assert.h>
 #include <cstdio>
 
+#include "Particle.hpp"
+#include "utils.hpp"
+
 //! SimSystem
 //! A class used to define the system that is being simulated
 class SimSystem {
@@ -18,6 +21,9 @@ class SimSystem {
         typedef std::vector<SpatialUnit *>::iterator iterator;
         iterator begin(); /**< returns the begining of the _cubes vector */
         iterator end(); /**< returns the end of the _cubes vector */
+
+        // Particle management
+        void addParticle(Particle *p); /**< Add a particle to the system */
 
     private:
         unsigned _N; /**< the size of the problem in NxNxN */

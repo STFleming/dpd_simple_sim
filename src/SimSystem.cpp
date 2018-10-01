@@ -43,3 +43,16 @@ SimSystem::~SimSystem() {
     }  
     delete _cubes;
 }
+
+// adds a particle to the system
+void SimSystem::addParticle(Particle *p){
+    // determine which SpatialUnit should host this particle
+    for(iterator i=begin(), ie=end(); i!=ie; ++i){
+       SpatialUnit *cur = *i;
+       if(cur->checkPos(p->getPos())) {
+          cur->addParticle(p);
+          return;
+       } 
+    }    
+    std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
+}

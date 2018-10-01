@@ -5,7 +5,7 @@
 #include <stdexcept>
 #include <assert.h>
 #include "Particle.hpp"
-#include "utils.h"
+#include "utils.hpp"
 
 //! SpatialUnit
 //! A class used to define the system that is being simulated
@@ -15,6 +15,8 @@ class SpatialUnit {
         ~SpatialUnit(); /**< Destructor */
         position_t getPos(); /**< returns the position for this cube */
         unsigned getSize(); /**< returns the size of this cube */
+        void addParticle(Particle* p); /**< Adds a particle to this spatial unit at (global) position p */ 
+        bool checkPos(position_t p); /**< returns True if this position is within this spatial unit */
     private:
         unsigned _size; /**< The size of one of the dimensions of this cube _size*_size*_size */
         position_t _center; /**< The center of this cube */ 

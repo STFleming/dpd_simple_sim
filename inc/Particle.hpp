@@ -1,7 +1,8 @@
 #ifndef __PARTICLE_H
 #define __PARTICLE_H
 
-#include "utils.h"
+#include "utils.hpp"
+#include <cstdint>
 
 // Particle class
 class Particle {
