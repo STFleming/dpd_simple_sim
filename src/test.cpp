@@ -5,15 +5,15 @@
 
 // Test program
 int main() {
-   SimSystem universe(100, 10, 3);
+   SimSystem universe(100, 10, 0);
 
    // Add some particles to the system
    const unsigned n = 100;
    for(unsigned i=0; i<n; i++){
        Particle *p = new Particle(randPos(100));
        universe.addParticle(p);
-       printf("Adding a new particle to the system at x:%f, y:%f, z:%f\n", p->getPos().x, p->getPos().y, p->getPos().z);
    }
-
+   
+   universe.emitJSON();
    std::cout << "done\n";
 }

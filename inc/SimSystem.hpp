@@ -10,6 +10,9 @@
 #include "Particle.hpp"
 #include "utils.hpp"
 
+#include <iostream> // for emitting JSON files
+#include <fstream>
+
 //! SimSystem
 //! A class used to define the system that is being simulated
 class SimSystem {
@@ -29,6 +32,9 @@ class SimSystem {
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */
+
+        // exporting
+        void emitJSON(); /**< emits global particle IDs and position as one JSON file (used for initial values) */
 
     private:
         float _N; /**< the size of the problem is NxNxN */

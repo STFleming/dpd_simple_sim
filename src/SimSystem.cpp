@@ -34,6 +34,27 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     }
 }
 
+// emits the state of the system as a JSON file
+void SimSystem::emitJSON() {
+    std::ofstream out;
+    out.open("state.json");
+    out <<"{\n";
+
+    // iterate through the particles and write the JSON 
+    for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
+        Particle *p = *i;
+        out << "\t{\"id\":\"p_"<<p->getID()<<"\", \"x\":"<<p->getPos().x<<", \"y\":"<<p->getPos().y<<", \"z\":"<<p->getPos().z<<"}";
+        if(p->getID() != (_particles->size()-1) )
+            out << ",\n";
+        else
+            out << "\n";
+    }
+
+    out << "}\n";
+    out.close();
+    return;
+}
+
 // iterators
 SimSystem::iterator SimSystem::begin() { return _cubes->begin(); }
 SimSystem::iterator SimSystem::end() { return _cubes->end(); }

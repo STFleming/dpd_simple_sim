@@ -15,3 +15,4 @@ bin/%.o: ./src/%.cpp ./inc/%.hpp
 
 clean:
 	rm -rf ./bin
+	rm -rf *.json
