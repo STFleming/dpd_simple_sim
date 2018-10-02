@@ -5,6 +5,17 @@
 <body>
 <svg width="1920" height="1000"></svg>
 <script>
+
+    // ---------------------- web sockets ----------------------
+    const socket = new WebSocket('ws://localhost:8079');
+
+    socket.onmessage = function (evt) {
+      var d = JSON.parse(evt.data);
+      console.log(d.id);
+    }
+
+    // ---------------------- /web sockets ----------------------
+
     var data    = [], min = max = 50;
     var origin  = [920, 500], startAngle = Math.PI/8, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
@@ -23,7 +34,7 @@
            z: Math.round(particles[i].z),
            id: particles[i].id
          });
-         console.log(data[i]);
+         //console.log(data[i]);
     }
 
     var _3d = d3._3d()

@@ -10,10 +10,10 @@ all: generate solve $(OBJS)
 state.json: generate
 	./generate
 
-launch_webserver: state.json webserver
+launch_webserver: state.json webserver solve
 	npm install express
 	npm install ws
-	nodejs main
+	./solve | nodejs main
 
 webserver: state.json
 	cp $(LEVEL)/renderer/*.js ./

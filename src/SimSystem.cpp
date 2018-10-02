@@ -152,7 +152,7 @@ void SimSystem::run(uint32_t period, uint32_t emitrate) {
             //update the particle with the new position
             p->setPos(cur_p);
             if(_ts % emitrate == 0) 
-                printf("{\"id\":\"p_%d\", \"x\":%.2f, \"y\":%.2f, \"z\":%.2f)\n",p->getID(), cur_p.x, cur_p.y, cur_p.z); 
+                printf("{\"id\":\"p_%d\", \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), cur_p.x, cur_p.y, cur_p.z); 
 
         } 
  

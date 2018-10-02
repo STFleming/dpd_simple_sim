@@ -5,13 +5,13 @@
 
 // Test program
 int main() {
-   SimSystem universe(100, 10, 4);
+   SimSystem universe(100, 10, 0);
    
    // read in the particles and initial state
    universe.populateFromJSON("state.json");
  
    // run the universe for 10000 timesteps, emitting it's value every 100 timesteps
-   universe.run(10000, 100);
+   universe.run(10000000, 5000);
 
    std::cout << "done\n";
 }
