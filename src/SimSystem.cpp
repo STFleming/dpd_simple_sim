@@ -125,37 +125,39 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 
 // runs the simulation for a given number of timesteps
 // emits the state of each particle given by the emitrate
-void SimSystem::run(uint32_t period, uint32_t emitrate) {
+void SimSystem::run(uint32_t period, float emitrate) {
 
     // TODO this is where the real computation needs to be done
     // currently it just moves the particles in a random direction (to test the interface)
     unsigned start_ts = _ts;
+    clock_t last_emit = clock();
     while(_ts <= start_ts + period) { // run for period timesteps
 
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
             Particle *p = *i; 
             position_t cur_p = p->getPos();
             // add a bit to the position
-            cur_p.x = cur_p.x + 0.1;
+            cur_p.x = cur_p.x + 0.0001;
             if(cur_p.x >= _N)
                 cur_p.x = cur_p.x - _N;
 
-            cur_p.y = cur_p.y + 0.1;
+            cur_p.y = cur_p.y + 0.0001;
             if(cur_p.y >= _N)
                 cur_p.y = cur_p.y - _N;
 
-            cur_p.z = cur_p.z + 0.1;
+            cur_p.z = cur_p.z + 0.0001;
             if(cur_p.z >= _N)
                 cur_p.z = cur_p.z - _N;
 
             //update the particle with the new position
             p->setPos(cur_p);
 
-            if(_ts % emitrate == 0) { 
-                //emitJSON("state_frame.json");
-                //printf("update\n"); // update command set via stdout to nodejs server
-                printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
+            if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
+                emitJSON("state_frame.json");
+                printf("update\n"); // update command set via stdout to nodejs server
+                //printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
                 fflush(stdout);
+                last_emit = clock();
             }
 
         } 

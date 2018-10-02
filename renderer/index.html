@@ -13,14 +13,14 @@
     var mx, mouseX;
 
     function getNewData(jsonfile) {
-        data = [];
+        p_pos = [];
         var request = new XMLHttpRequest();
         request.open("GET", jsonfile, false);
         request.send(null)
         var JSON_object = JSON.parse(request.responseText);
         var particles = JSON_object.particles;
         for(var i = 0; i<particles.length; i++) {
-            data.push({
+            p_pos.push({
                x: Math.round(particles[i].x),
                y: Math.round(particles[i].y),
                z: Math.round(particles[i].z),
@@ -28,9 +28,10 @@
              });
              //console.log(data[i]);
         }
+        return p_pos;
     }
 
-    getNewData("state.json");
+    data = getNewData("state.json");
 
     var _3d = d3._3d()
         .scale(5)
@@ -49,19 +50,35 @@
 
     socket.onmessage = function (evt) {
         // update the particle position
-        var d = JSON.parse(evt.data);
-        for(var i=0; i<data.length; i++) {
-             if (data[i].id == d.id) {
-                 //console.log("updating pos for point"+d.id);
-                 data[i].x = Math.round(d.x);
-                 data[i].y = Math.round(d.y);
-                 data[i].z = Math.round(d.z);
-                 data3D = _3d(data);
-                 processData(data3D);
-                 return;
-             }
+        //var d = JSON.parse(evt.data);
+        //for(var i=0; i<data.length; i++) {
+        //     if (data[i].id == d.id) {
+        //         //console.log("updating pos for point"+d.id);
+        //         data[i].x = Math.round(d.x);
+        //         data[i].y = Math.round(d.y);
+        //         data[i].z = Math.round(d.z);
+        //         data3D = _3d(data);
+        //         processData(data3D);
+        //         return;
+        //     }
+        //}
+        //console.log("ERROR: could not find a particle with id: "+d.id);
+        if(evt.data == "update") {
+            var tmp = getNewData("state_frame.json");
+            for(var i=0; i<tmp.length; i++) {
+                for(var j=0; j<data.length; j++){
+                   if(data[i].id == tmp[i].id) {
+                      data[i].x = Math.round(tmp[i].x);
+                      data[i].y = Math.round(tmp[i].y);
+                      data[i].z = Math.round(tmp[i].z);
+                   }
+                }
+            }
+            data3D = _3d(data);
+            processData(data3D);
+        } else {
+          console.log("Error: we recvd a command other than update: "+evt.data);
         }
-        console.log("ERROR: could not find a particle with id: "+d.id);
     }
 
     // ---------------------- /web sockets ----------------------

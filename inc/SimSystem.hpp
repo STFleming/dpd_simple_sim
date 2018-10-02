@@ -16,6 +16,8 @@
 #include <jsoncpp/json/value.h> // for parsing JSON files
 #include <jsoncpp/json/reader.h> // for parsing JSON files
 
+#include <ctime> // for timing the emit output
+
 //! SimSystem
 //! A class used to define the system that is being simulated
 class SimSystem {
@@ -35,7 +37,7 @@ class SimSystem {
 
         // simulation management
         void run(uint32_t period); /**< runs the simulation for period timesteps */
-        void run(uint32_t period, uint32_t emitrate); /**< runs the simulation for period timesteps emitting it's state every emitrate timesteps */
+        void run(uint32_t period, float emitrate); /**< runs the simulation for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */
