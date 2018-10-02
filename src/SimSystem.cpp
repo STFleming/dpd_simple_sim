@@ -39,6 +39,7 @@ void SimSystem::emitJSON() {
     std::ofstream out;
     out.open("state.json");
     out <<"{\n";
+    out << "  \"particles\":[\n";
 
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
@@ -50,7 +51,7 @@ void SimSystem::emitJSON() {
             out << "\n";
     }
 
-    out << "}\n";
+    out << "]}\n";
     out.close();
     return;
 }
