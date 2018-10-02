@@ -18,9 +18,14 @@ class SimSystem {
         ~SimSystem(); /**< Destructor */
 
         // Iterator type
+        // default iterators is for the spatial units
         typedef std::vector<SpatialUnit *>::iterator iterator;
         iterator begin(); /**< returns the begining of the _cubes vector */
         iterator end(); /**< returns the end of the _cubes vector */
+        // but we also have particle iterators for the global particles list
+        typedef std::vector<Particle *>::iterator p_iterator;
+        p_iterator p_begin(); /**< returns the start of the global particle list */
+        p_iterator p_end(); /**< returns the start of the global particle list */
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */

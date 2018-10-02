@@ -5,6 +5,9 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     _N = N;
     _D = D;
     _verbosity = verbosity;
+    
+    // create the global list of particles
+    _particles = new std::vector<Particle *>();
 
     if(_N == 0) { // cannot have a problem with no size
        std::runtime_error("Problem must have a size >0\n");
@@ -34,6 +37,8 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
 // iterators
 SimSystem::iterator SimSystem::begin() { return _cubes->begin(); }
 SimSystem::iterator SimSystem::end() { return _cubes->end(); }
+SimSystem::p_iterator SimSystem::p_begin() { return _particles->begin(); }
+SimSystem::p_iterator SimSystem::p_end() { return _particles->end(); }
 
 /**! Destructor: cleans up the _cubes */
 SimSystem::~SimSystem() {
@@ -44,10 +49,15 @@ SimSystem::~SimSystem() {
         delete cur;
     }  
     delete _cubes;
+    delete _particles; // this should probably iterate through and delete them all not the spatial units...
 }
 
 // adds a particle to the system
 void SimSystem::addParticle(Particle *p){
+    // add the particle to the global particles list
+    p->setID(_particles->size()); // just use the current number of particles as a unique ID
+    _particles->push_back(p);     
+
     // determine which SpatialUnit should host this particle
     for(iterator i=begin(), ie=end(); i!=ie; ++i){
        SpatialUnit *cur = *i;
