@@ -34,6 +34,40 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     }
 }
 
+// populates the universe with particles from a JSON file
+void SimSystem::populateFromJSON(std::string jsonfile) {
+    std::ifstream particle_file(jsonfile);
+    Json::Value root;
+    Json::Reader reader;    
+
+    // read in the JSON data
+    bool isJsonOK = (reader.parse(particle_file, root));
+    
+    if(isJsonOK) {
+        // read the particles from the JSON file
+        Json::Value particles = root["particles"];
+
+        // loop through the particles
+        for(int i=0; i < particles.size(); ++i) {
+           uint32_t cid = particles[i].get("id", 0xFFFFFFFF).asUInt();
+           position_t cpos;
+           cpos.x = particles[i].get("x", 0.0).asFloat(); 
+           cpos.y = particles[i].get("y", 0.0).asFloat(); 
+           cpos.z = particles[i].get("z", 0.0).asFloat(); 
+
+           // create the new particle
+           Particle *p = new Particle(cpos); // initialise with the position
+           p->setID(cid); // set it's ID 
+   
+           // add it to the universe
+           _particles->push_back(p);
+           allocateParticleToSpatialUnit(p);
+        }
+    } else {
+        std::runtime_error("Error: the input JSON file could not be parsed\n");
+    }
+}
+
 // emits the state of the system as a JSON file
 void SimSystem::emitJSON() {
     std::ofstream out;
@@ -44,7 +78,7 @@ void SimSystem::emitJSON() {
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
         Particle *p = *i;
-        out << "\t{\"id\":\"p_"<<p->getID()<<"\", \"x\":"<<p->getPos().x<<", \"y\":"<<p->getPos().y<<", \"z\":"<<p->getPos().z<<"}";
+        out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x<<", \"y\":"<<p->getPos().y<<", \"z\":"<<p->getPos().z<<"}";
         if(p->getID() != (_particles->size()-1) )
             out << ",\n";
         else
@@ -74,13 +108,8 @@ SimSystem::~SimSystem() {
     delete _particles; // this should probably iterate through and delete them all not the spatial units...
 }
 
-// adds a particle to the system
-void SimSystem::addParticle(Particle *p){
-    // add the particle to the global particles list
-    p->setID(_particles->size()); // just use the current number of particles as a unique ID
-    _particles->push_back(p);     
-
-    // determine which SpatialUnit should host this particle
+// allocates a particles to spatial processing units
+void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
     for(iterator i=begin(), ie=end(); i!=ie; ++i){
        SpatialUnit *cur = *i;
        if(cur->checkPos(p->getPos())) {
@@ -89,4 +118,12 @@ void SimSystem::addParticle(Particle *p){
        } 
     }    
     std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
+}
+
+// adds a particle to the system
+void SimSystem::addParticle(Particle *p){
+    // add the particle to the global particles list
+    p->setID(_particles->size()); // just use the current number of particles as a unique ID
+    _particles->push_back(p);     
+    allocateParticleToSpatialUnit(p); // allocate particle to a processor
 }

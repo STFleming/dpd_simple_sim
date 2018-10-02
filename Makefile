@@ -7,7 +7,7 @@ OBJS = bin/SimSystem.o bin/SpatialUnit.o bin/Particle.o bin/utils.o
 all: test $(OBJS)
 
 test: $(OBJS) src/test.cpp
-	g++ -std=c++11 -O2 -I ./inc src/test.cpp -o ./bin/test ./bin/*.o
+	g++ -std=c++11 -O2 -I ./inc src/test.cpp -o ./bin/test ./bin/*.o -ljsoncpp
 
 bin/%.o: ./src/%.cpp ./inc/%.hpp
 	mkdir -p ./bin

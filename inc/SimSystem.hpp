@@ -6,12 +6,15 @@
 #include <stdexcept>
 #include <assert.h>
 #include <cstdio>
+#include <string>
 
 #include "Particle.hpp"
 #include "utils.hpp"
 
 #include <iostream> // for emitting JSON files
 #include <fstream>
+#include <jsoncpp/json/value.h> // for parsing JSON files
+#include <jsoncpp/json/reader.h> // for parsing JSON files
 
 //! SimSystem
 //! A class used to define the system that is being simulated
@@ -32,6 +35,8 @@ class SimSystem {
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */
+        void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
+        void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
 
         // exporting
         void emitJSON(); /**< emits global particle IDs and position as one JSON file (used for initial values) */
