@@ -51,3 +51,7 @@ position_t SpatialUnit::getPos() {
 float SpatialUnit::getSize() {
     return _size;
 }
+
+/**! iterators for the start and end of the particle vector */
+SpatialUnit::iterator SpatialUnit::begin(){ return _particles->begin(); }
+SpatialUnit::iterator SpatialUnit::end(){ return _particles->end(); }

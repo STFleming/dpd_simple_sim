@@ -31,6 +31,7 @@ class SimSystem {
         unsigned _verbosity = 0; /**< the verbosity of the simulation*/
         float _unit_size; /**< each spatial unit has a size _unit_size x _unit_size x _unit_size */
         std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
+        std::vector<Particle *>* _particles; /**< the global list of particles */
 };
 
 

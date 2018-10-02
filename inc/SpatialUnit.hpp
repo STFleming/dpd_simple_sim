@@ -18,7 +18,11 @@ class SpatialUnit {
         void addParticle(Particle* p); /**< Adds a particle to this spatial unit at (global) position p */ 
         bool checkPos(position_t p); /**< returns True if this position is within this spatial unit */
 
-        // TODO add iterators for all the particles in a spatial unit
+        // particle iterators
+        typedef std::vector<Particle *>::iterator iterator; /**< iterator type for the particles */
+        iterator begin(); /**< returns the start of the particle vector */
+        iterator end(); /**< returns the end of the particle vector */
+        
     private:
         float _size; /**< The size of one of the dimensions of this cube _size*_size*_size */
         position_t _pos; /**< The start position of this cube */ 
