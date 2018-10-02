@@ -124,7 +124,8 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 }
 
 // runs the simulation for a given number of timesteps
-void SimSystem::run(uint32_t period) {
+// emits the state of each particle given by the emitrate
+void SimSystem::run(uint32_t period, uint32_t emitrate) {
 
     // TODO this is where the real computation needs to be done
     // currently it just moves the particles in a random direction (to test the interface)
@@ -147,7 +148,14 @@ void SimSystem::run(uint32_t period) {
             cur_p.z = cur_p.z + 0.5;
             if(cur_p.z >= _N)
                 cur_p.z = cur_p.z - _N;
+
+            //update the particle with the new position
+            p->setPos(cur_p);
+            if(_ts % emitrate == 0) 
+                printf("{\"id\":\"p_%d\", \"x\":%.2f, \"y\":%.2f, \"z\":%.2f)\n",p->getID(), cur_p.x, cur_p.y, cur_p.z); 
+
         } 
+ 
 
         // update time
         _ts = _ts + 1;
