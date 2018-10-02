@@ -1,11 +1,11 @@
 #include "SpatialUnit.hpp"
 
 /**! Constructor: creates a problem of NxNxN cubes */
-SpatialUnit::SpatialUnit(unsigned size, uint16_t x, uint16_t y, uint16_t z, unsigned verbosity) {
+SpatialUnit::SpatialUnit(float size, float x, float y, float z, unsigned verbosity) {
     _size = size;
-    _center.x = x;
-    _center.y = y;
-    _center.z = z;
+    _pos.x = x;
+    _pos.y = y;
+    _pos.z = z;
     _verbosity = verbosity;
     
     // create the heap vector of particles
@@ -21,11 +21,11 @@ SpatialUnit::~SpatialUnit() {
 
 /**! returns true if this position is within this spatial unit */
 bool SpatialUnit::checkPos(position_t p) {
-    if( (p.x >= _center.x + _size/2) || (p.x <= _center.x - _size/2) )
+    if( (p.x < _pos.x) || (p.x >= _pos.x + _size) )
         return false;
-    if( (p.y >= _center.y + _size/2) || (p.y <= _center.y - _size/2) )
+    if( (p.y < _pos.y) || (p.y >= _pos.y + _size) )
         return false;
-    if( (p.z >= _center.z + _size/2) || (p.z <= _center.z - _size/2) )
+    if( (p.z < _pos.z) || (p.z >= _pos.z + _size) )
         return false;
     return true;
 } 
@@ -36,7 +36,7 @@ void SpatialUnit::addParticle(Particle* p) {
    if(checkPos(p->getPos())) {
        _particles->push_back(p); // add the particle 
        if(_verbosity >= 2)
-           printf("    spatial unit center=(x:%d,y:%d,z:%d) is hosting a particle at pos=(x:%d, y:%d, z:%d)\n", _center.x, _center.y, _center.z, p->getPos().x, p->getPos().y, p->getPos().z);
+           printf("    spatial unit center=(x:%f,y:%f,z:%f) is hosting a particle at pos=(x:%f, y:%f, z:%f)\n", _pos.x, _pos.y, _pos.z, p->getPos().x, p->getPos().y, p->getPos().z);
    } else {
      std::runtime_error("Error: this particle cannot fit in within this cube!\n"); 
    } 
@@ -44,10 +44,10 @@ void SpatialUnit::addParticle(Particle* p) {
 
 /**! returns the position of this cube */
 position_t SpatialUnit::getPos() {
-    return _center;
+    return _pos;
 }
 
 /**! returns the size of this cube */
-unsigned SpatialUnit::getSize() {
+float SpatialUnit::getSize() {
     return _size;
 }

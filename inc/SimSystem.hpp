@@ -14,7 +14,7 @@
 //! A class used to define the system that is being simulated
 class SimSystem {
     public:
-        SimSystem(unsigned N, unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
+        SimSystem(float N, unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
         ~SimSystem(); /**< Destructor */
 
         // Iterator type
@@ -26,9 +26,10 @@ class SimSystem {
         void addParticle(Particle *p); /**< Add a particle to the system */
 
     private:
-        unsigned _N; /**< the size of the problem in NxNxN */
-        unsigned _D; /**< the number of discrete cubes along an axis _N % _D == 0 */
+        float _N; /**< the size of the problem is NxNxN */
+        unsigned _D; /**< the number of discrete cubes along an axis */
         unsigned _verbosity = 0; /**< the verbosity of the simulation*/
+        float _unit_size; /**< each spatial unit has a size _unit_size x _unit_size x _unit_size */
         std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
 };
 

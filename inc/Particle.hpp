@@ -13,9 +13,9 @@ class Particle {
         void setPos(position_t npos); /**< set a new position for this particle */
 
     private:
-        uint16_t _velocity; /**< the current velocity of the particle */
+        float _velocity; /**< the current velocity of the particle */
         position_t _pos; /**< the current position of this particle*/ 
-        uint16_t _mass; /**< the mass of this particle */
+        float _mass; /**< the mass of this particle */
 };
 
 
