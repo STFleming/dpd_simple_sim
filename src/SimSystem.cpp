@@ -5,6 +5,9 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     _N = N;
     _D = D;
     _verbosity = verbosity;
+    _t = 0.0; // simulation starts at t=0.0
+    _ts = 0;
+    _dt = 0.05; // guess
     
     // create the global list of particles
     _particles = new std::vector<Particle *>();
@@ -69,9 +72,9 @@ void SimSystem::populateFromJSON(std::string jsonfile) {
 }
 
 // emits the state of the system as a JSON file
-void SimSystem::emitJSON() {
+void SimSystem::emitJSON(std::string jsonfile) {
     std::ofstream out;
-    out.open("state.json");
+    out.open(jsonfile);
     out <<"{\n";
     out << "  \"particles\":[\n";
 
@@ -118,6 +121,39 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
        } 
     }    
     std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
+}
+
+// runs the simulation for a given number of timesteps
+void SimSystem::run(uint32_t period) {
+
+    // TODO this is where the real computation needs to be done
+    // currently it just moves the particles in a random direction (to test the interface)
+    unsigned start_ts = _ts;
+    while(_ts <= start_ts + period) { // run for period timesteps
+
+        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
+            Particle *p = *i; 
+            position_t cur_p = p->getPos();
+
+            // add a bit to the position
+            cur_p.x = cur_p.x + 0.5;
+            if(cur_p.x >= _N)
+                cur_p.x = cur_p.x - _N;
+
+            cur_p.y = cur_p.y + 0.5;
+            if(cur_p.y >= _N)
+                cur_p.y = cur_p.y - _N;
+
+            cur_p.z = cur_p.z + 0.5;
+            if(cur_p.z >= _N)
+                cur_p.z = cur_p.z - _N;
+        } 
+
+        // update time
+        _ts = _ts + 1;
+        _t = _t + _dt;
+    }
+
 }
 
 // adds a particle to the system

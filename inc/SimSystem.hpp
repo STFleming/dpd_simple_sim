@@ -33,15 +33,21 @@ class SimSystem {
         p_iterator p_begin(); /**< returns the start of the global particle list */
         p_iterator p_end(); /**< returns the start of the global particle list */
 
+        // simulation management
+        void run(uint32_t period); /**< runs the simulation for period timesteps */
+
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */
         void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
 
         // exporting
-        void emitJSON(); /**< emits global particle IDs and position as one JSON file (used for initial values) */
+        void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
 
     private:
+        float _t; /**< the current simulation time */
+        float _dt; /**< simulation timestep size */
+        unsigned _ts; /**< the current integer timestep */
         float _N; /**< the size of the problem is NxNxN */
         unsigned _D; /**< the number of discrete cubes along an axis */
         unsigned _verbosity = 0; /**< the verbosity of the simulation*/

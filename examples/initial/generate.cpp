@@ -14,6 +14,6 @@ int main() {
        universe.addParticle(p);
    }
    
-   universe.emitJSON();
+   universe.emitJSON("state.json");
    std::cout << "done\n";
 }
