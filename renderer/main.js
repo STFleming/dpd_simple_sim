@@ -38,6 +38,7 @@ r1.on('line', function(line) {
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname+'/index.html')));
 app.get('/state.json', (req, res) => res.sendFile(path.join(__dirname+'/state.json')));
+app.get('/state_frame.json', (req, res) => res.sendFile(path.join(__dirname+'/state_frame.json')));
 app.get('/d3-3d.js', (req, res) => res.sendFile(path.join(__dirname+'/d3-3d.js')));
 
 app.listen(3000, () => console.log('listening on port 3000'))

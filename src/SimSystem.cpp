@@ -135,24 +135,28 @@ void SimSystem::run(uint32_t period, uint32_t emitrate) {
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
             Particle *p = *i; 
             position_t cur_p = p->getPos();
-
             // add a bit to the position
-            cur_p.x = cur_p.x + 0.5;
+            cur_p.x = cur_p.x + 0.1;
             if(cur_p.x >= _N)
                 cur_p.x = cur_p.x - _N;
 
-            cur_p.y = cur_p.y + 0.5;
+            cur_p.y = cur_p.y + 0.1;
             if(cur_p.y >= _N)
                 cur_p.y = cur_p.y - _N;
 
-            cur_p.z = cur_p.z + 0.5;
+            cur_p.z = cur_p.z + 0.1;
             if(cur_p.z >= _N)
                 cur_p.z = cur_p.z - _N;
 
             //update the particle with the new position
             p->setPos(cur_p);
-            if(_ts % emitrate == 0) 
-                printf("{\"id\":\"p_%d\", \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), cur_p.x, cur_p.y, cur_p.z); 
+
+            if(_ts % emitrate == 0) { 
+                //emitJSON("state_frame.json");
+                //printf("update\n"); // update command set via stdout to nodejs server
+                printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
+                fflush(stdout);
+            }
 
         } 
  

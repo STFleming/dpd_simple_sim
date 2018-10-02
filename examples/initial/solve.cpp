@@ -11,7 +11,7 @@ int main() {
    universe.populateFromJSON("state.json");
  
    // run the universe for 10000 timesteps, emitting it's value every 100 timesteps
-   universe.run(10000000, 5000);
+   universe.run(1000000000, 50000);
 
    std::cout << "done\n";
 }
