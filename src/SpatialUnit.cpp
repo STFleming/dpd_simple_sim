@@ -14,9 +14,11 @@ SpatialUnit::SpatialUnit(float size, float x, float y, float z, unsigned verbosi
 
 /**! Destructor: cleans up the particles */
 SpatialUnit::~SpatialUnit() {
-   // TODO iterate through all the particles and delete them
-   // TODO delete the vector of particles
-
+   for(iterator i=begin(), ie=end(); i!=ie; ++i) {
+       Particle *p = *i;
+       delete p;
+   }
+   delete _particles;
 }
 
 /**! returns true if this position is within this spatial unit */
