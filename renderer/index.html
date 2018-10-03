@@ -33,7 +33,6 @@
     }
 
     data = getNewData("state.json");
-    
 
     var _3d = d3._3d()
         .scale(4)
@@ -46,6 +45,14 @@
     var data3D  = _3d(data);
     var extentZ = d3.extent(data3D, function(d){ return d.rotated.z });
     var zScale  = d3.scaleLinear().domain([extentZ[1]+10, extentZ[0]-10]).range([1, 8]);
+
+    // ------------------- auto rotate -------------------------
+    // code to slowly rotate the cube of particles
+    var autorotate = setInterval( autorotater, 50 ); // rotate it a bit every 250ms?
+    function autorotater() {
+        beta += 0.004;
+        processData(_3d.rotateY(beta + startAngle)(data));
+    } 
 
 
     // ---------------------- web sockets ----------------------
