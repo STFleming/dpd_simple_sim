@@ -5,12 +5,14 @@
 
 // generates some particles program
 int main() {
-   SimSystem universe(500, 10, 0);
+   const unsigned unisize = 200;
+
+   SimSystem universe(unisize, 10, 0);
 
    // Add some particles to the system
-   const unsigned n = 1000;
+   const unsigned n = 500;
    for(unsigned i=0; i<n; i++){
-       Particle *p = new Particle(randPos(100));
+       Particle *p = new Particle(randPos(unisize));
        universe.addParticle(p);
    }
    

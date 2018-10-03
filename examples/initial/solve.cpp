@@ -5,7 +5,10 @@
 
 // Test program
 int main() {
-   SimSystem universe(500, 10, 0);
+   // size of the universe
+   const unsigned unisize = 200;
+
+   SimSystem universe(unisize, 10, 0);
    
    // read in the particles and initial state
    universe.populateFromJSON("state.json");

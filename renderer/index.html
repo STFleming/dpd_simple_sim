@@ -3,13 +3,14 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="d3-3d.js"></script>
 <body>
-<svg width="1920" height="1000"></svg>
+<svg width="1900" height="1200"></svg>
 <script>
 
-    var data    = [], min = max = 50;
-    var origin  = [920, 500], startAngle = Math.PI/8, beta = startAngle;
+    var data    = [], min = max = 100;
+    var origin  = [860, 520], startAngle = Math.PI/8, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
+    var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
     var mx, mouseX;
 
     function getNewData(jsonfile) {
@@ -21,9 +22,9 @@
         var particles = JSON_object.particles;
         for(var i = 0; i<particles.length; i++) {
             p_pos.push({
-               x: Math.round(particles[i].x),
-               y: Math.round(particles[i].y),
-               z: Math.round(particles[i].z),
+               x: Math.round(particles[i].x - max),
+               y: Math.round(particles[i].y - max),
+               z: Math.round(particles[i].z - max),
                id: particles[i].id
              });
              //console.log(data[i]);
@@ -32,13 +33,15 @@
     }
 
     data = getNewData("state.json");
+    
 
     var _3d = d3._3d()
-        .scale(5)
+        .scale(4)
         .origin(origin)
         .rotateX(startAngle)
         .rotateY(startAngle)
         .primitiveType('POINTS');
+
 
     var data3D  = _3d(data);
     var extentZ = d3.extent(data3D, function(d){ return d.rotated.z });
@@ -85,18 +88,14 @@
 
 
     // some rough stuff to find the center of the particles
-    var vx = data.map(function(point){ return point.x; });
-    var vy = data.map(function(point){ return point.y; });
-    var vz = data.map(function(point){ return point.z; });
-    for(var j=0; j<vx.length; j++) {
-       var vx_sum = vx_sum + vx[j];
-       var vy_sum = vy_sum + vy[j];
-       var vz_sum = vz_sum + vz[j];
-    }
-    var vx_avg = Math.round(vx_sum/vx.length);
-    var vy_avg = Math.round(vy_sum/vy.length);
-    var vz_avg = Math.round(vz_sum/vz.length);
-    // set the center of the graph
+    //for(var j=0; j<vx.length; j++) {
+    //   var vx_sum = vx_sum + vx[j];
+    //   var vy_sum = vy_sum + vy[j];
+    //   var vz_sum = vz_sum + vz[j];
+    //}
+    //var vx_avg = Math.round(vx_sum/vx.length);
+    //var vy_avg = Math.round(vy_sum/vy.length);
+    //var vz_avg = Math.round(vz_sum/vz.length);
 
     function dragStart(){
         mx = d3.event.x;
