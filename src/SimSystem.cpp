@@ -134,18 +134,19 @@ void SimSystem::run(uint32_t period, float emitrate) {
     while(_ts <= start_ts + period) { // run for period timesteps
 
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
+            const float p_speed = 0.01;
             Particle *p = *i; 
             position_t cur_p = p->getPos();
             // add a bit to the position
-            cur_p.x = cur_p.x + 0.001;
+            cur_p.x = cur_p.x + p_speed;
             if(cur_p.x >= _N)
                 cur_p.x = cur_p.x - _N;
 
-            cur_p.y = cur_p.y + 0.001;
+            cur_p.y = cur_p.y + p_speed;
             if(cur_p.y >= _N)
                 cur_p.y = cur_p.y - _N;
 
-            cur_p.z = cur_p.z + 0.001;
+            cur_p.z = cur_p.z + p_speed;
             if(cur_p.z >= _N)
                 cur_p.z = cur_p.z - _N;
 

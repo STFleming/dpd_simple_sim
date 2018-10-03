@@ -6,7 +6,7 @@
 // Test program
 int main() {
    // size of the universe
-   const unsigned unisize = 200;
+   const unsigned unisize = 3000;
 
    SimSystem universe(unisize, 10, 0);
    
@@ -14,7 +14,7 @@ int main() {
    universe.populateFromJSON("state.json");
  
    // run the universe for 10000 timesteps, emitting it's value every 0.5 seconds 
-   universe.run(1000000000, 0.1);
+   universe.run(1000000000, 0.07);
 
    std::cout << "done\n";
 }

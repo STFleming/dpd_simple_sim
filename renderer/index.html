@@ -6,7 +6,7 @@
 <svg width="1900" height="1200"></svg>
 <script>
 
-    var data    = [], min = max = 100;
+    var data    = [], min = max = 1500;
     var origin  = [860, 520], startAngle = Math.PI/8, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
@@ -35,7 +35,7 @@
     data = getNewData("state.json");
 
     var _3d = d3._3d()
-        .scale(4)
+        .scale(0.3)
         .origin(origin)
         .rotateX(startAngle)
         .rotateY(startAngle)
@@ -48,9 +48,9 @@
 
     // ------------------- auto rotate -------------------------
     // code to slowly rotate the cube of particles
-    var autorotate = setInterval( autorotater, 50 ); // rotate it a bit every 250ms?
+    var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
     function autorotater() {
-        beta += 0.004;
+        beta -= 0.0005;
         processData(_3d.rotateY(beta + startAngle)(data));
     } 
 
