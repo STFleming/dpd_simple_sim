@@ -2,10 +2,22 @@
 #include <cstdio>
 #include "SimSystem.hpp"
 #include "Particle.hpp"
+#include "utils.hpp"
+
+#define A_IJ 0.05 // the interaction strength
+#define R_C 50.0 // the interaction cutoff
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
     // do the pairwise conservative force
+    //float f = 0.5 * A_IJ * (1 - (dist(me->getPos(), other->getPos()) / R_C ));
+    float r_ij = dist(me->getPos(), other->getPos());
+    float tmp_f = A_IJ*(1 - r_ij/R_C)/r_ij; 
+    
+    // update the forces acting on the two particles
+    me->setForce( me->getForce() + f); 
+    other->setForce( other->getForce() + f); 
+    return;
 }
 
 // drag pairwie force declaration

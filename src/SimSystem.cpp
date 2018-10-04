@@ -12,6 +12,9 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     // create the global list of particles
     _particles = new std::vector<Particle *>();
 
+    // create a global list of particle pairs used in the seq_run naive solver
+    _seq_pairs = new PartPair();
+
     if(_N == 0) { // cannot have a problem with no size
        std::runtime_error("Problem must have a size >0\n");
     }
@@ -126,51 +129,109 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 
 // runs the simulation for a given number of timesteps sequentially there is no parallelism here
 // emits the state of each particle given by the emitrate
+// this is the naive implementation of this algorithm (horrifically slow)
 void SimSystem::seq_run(uint32_t period, float emitrate) {
 
-    // TODO this is where the real computation needs to be done
-    // currently it just moves the particles in a random direction (to test the interface)
+    const float cutoff = 50.0; // randomly selecting a single cutoff for all forces
     unsigned start_ts = _ts;
     clock_t last_emit = clock();
     while(_ts <= start_ts + period) { // run for period timesteps
 
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
-            const float p_speed = 0.01;
-            Particle *p = *i; 
-            position_t cur_p = p->getPos();
-            // add a bit to the position
-            cur_p.x = cur_p.x + p_speed;
-            if(cur_p.x >= _N)
-                cur_p.x = cur_p.x - _N;
-
-            cur_p.y = cur_p.y + p_speed;
-            if(cur_p.y >= _N)
-                cur_p.y = cur_p.y - _N;
-
-            cur_p.z = cur_p.z + p_speed;
-            if(cur_p.z >= _N)
-                cur_p.z = cur_p.z - _N;
-
-            //update the particle with the new position
-            p->setPos(cur_p);
-
-            if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-                emitJSON("state.json");
-                printf("update\n"); // update command set via stdout to nodejs server
-                //printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
-                fflush(stdout);
-                last_emit = clock();
+            for(p_iterator j=p_begin(), je=p_end(); j!=je; ++j) {
+                Particle *p1 = *i;
+                Particle *p2 = *j;
+                if(p1 != p2) { // particles do not apply forces to themselves
+                    if ( dist(p1->getPos(), p2->getPos()) <= cutoff ) {
+                        // this particle is in range
+                        // make sure that we have not done this pairwise interaction already
+                        bool already_pair = false;
+                        for(PartPair::iterator pi=_seq_pairs->begin(), pie=_seq_pairs->end(); pi!=pie; ++pi) {
+                            std::tuple<Particle *, Particle*> cur_pair = *pi;
+                            bool pair_one = (p1->getID() == std::get<0>(cur_pair)->getID()) && (p2->getID() == std::get<1>(cur_pair)->getID());
+                            bool pair_two = (p2->getID() == std::get<0>(cur_pair)->getID()) && (p1->getID() == std::get<1>(cur_pair)->getID());
+                            if (pair_one || pair_two) {
+                               already_pair = true;
+                               break;
+                            }
+                        }
+                        if(!already_pair) {
+                            // do the force update
+                            p1->callConservative(p2);
+                            p1->callDrag(p2);
+                            p1->callRandom(p2);
+                            std::tuple<Particle *, Particle*> part_pair = std::make_tuple(p1, p2);
+                            _seq_pairs->push_back(part_pair);
+                        } 
+                    } 
+                }
             }
-
         } 
- 
+
+
+        // update velocity and distance
+
+        // cleanup: clear forces, clear velocity
+        _seq_pairs->clear(); // we no longer need to track the pairs
+
+        // do we want to emit the state of the simulation
+        if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
+            emitJSON("state.json");
+            printf("update\n"); // update command set via stdout to nodejs server
+            fflush(stdout);
+            last_emit = clock();
+        }
+
 
         // update time
         _ts = _ts + 1;
         _t = _t + _dt;
     }
-
 }
+
+//void SimSystem::seq_run(uint32_t period, float emitrate) {
+//
+//    unsigned start_ts = _ts;
+//    clock_t last_emit = clock();
+//    while(_ts <= start_ts + period) { // run for period timesteps
+//
+//        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
+//            const float p_speed = 0.01;
+//            Particle *p = *i; 
+//            position_t cur_p = p->getPos();
+//            // add a bit to the position
+//            cur_p.x = cur_p.x + p_speed;
+//            if(cur_p.x >= _N)
+//                cur_p.x = cur_p.x - _N;
+//
+//            cur_p.y = cur_p.y + p_speed;
+//            if(cur_p.y >= _N)
+//                cur_p.y = cur_p.y - _N;
+//
+//            cur_p.z = cur_p.z + p_speed;
+//            if(cur_p.z >= _N)
+//                cur_p.z = cur_p.z - _N;
+//
+//            //update the particle with the new position
+//            p->setPos(cur_p);
+//
+//            if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
+//                emitJSON("state.json");
+//                printf("update\n"); // update command set via stdout to nodejs server
+//                //printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
+//                fflush(stdout);
+//                last_emit = clock();
+//            }
+//
+//        } 
+// 
+//
+//        // update time
+//        _ts = _ts + 1;
+//        _t = _t + _dt;
+//    }
+//
+//}
 
 // adds a particle to the system
 void SimSystem::addParticle(Particle *p){

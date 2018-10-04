@@ -8,6 +8,7 @@
 
 //! A typedef used for the position of a cube center or a particle
 typedef struct _position_t { float x; float y; float z; } position_t;
+typedef struct _vector_t { float x; float y; float z; } vector_t;
 
 //! generates a random position within a given space (NxNxN)
 position_t randPos(float N);

@@ -3,6 +3,7 @@
 
 #include "SpatialUnit.hpp" // contains the particle class
 #include <vector> 
+#include <tuple> 
 #include <stdexcept>
 #include <assert.h>
 #include <cstdio>
@@ -35,6 +36,8 @@ class SimSystem {
         p_iterator p_begin(); /**< returns the start of the global particle list */
         p_iterator p_end(); /**< returns the start of the global particle list */
 
+        typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
+
         // simulation management
         void run(uint32_t period); /**< runs the simulation for period timesteps */
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
@@ -57,6 +60,8 @@ class SimSystem {
         float _unit_size; /**< each spatial unit has a size _unit_size x _unit_size x _unit_size */
         std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
         std::vector<Particle *>* _particles; /**< the global list of particles */
+        PartPair* _seq_pairs; /**< used in the seq_run to keep track of which pairwise interactions have already been processed */  
+        
 };
 
 
