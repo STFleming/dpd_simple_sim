@@ -124,9 +124,9 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
     std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
 }
 
-// runs the simulation for a given number of timesteps
+// runs the simulation for a given number of timesteps sequentially there is no parallelism here
 // emits the state of each particle given by the emitrate
-void SimSystem::run(uint32_t period, float emitrate) {
+void SimSystem::seq_run(uint32_t period, float emitrate) {
 
     // TODO this is where the real computation needs to be done
     // currently it just moves the particles in a random direction (to test the interface)
@@ -155,7 +155,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
             p->setPos(cur_p);
 
             if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-                emitJSON("state_frame.json");
+                emitJSON("state.json");
                 printf("update\n"); // update command set via stdout to nodejs server
                 //printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
                 fflush(stdout);

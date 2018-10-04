@@ -8,3 +8,9 @@ position_t randPos(float N){
     return t_pos; 
 }
 
+
+// distance function for computing the euclidean distance between two particles
+float dist(position_t a, position_t b) {
+    // calculate the position
+    return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z));
+}

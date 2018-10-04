@@ -74,7 +74,7 @@
         //}
         //console.log("ERROR: could not find a particle with id: "+d.id);
         if(evt.data == "update") {
-            var tmp = getNewData("state_frame.json");
+            var tmp = getNewData("state.json");
             for(var i=0; i<tmp.length; i++) {
                 for(var j=0; j<data.length; j++){
                    if(data[i].id == tmp[i].id) {

@@ -37,7 +37,7 @@ class SimSystem {
 
         // simulation management
         void run(uint32_t period); /**< runs the simulation for period timesteps */
-        void run(uint32_t period, float emitrate); /**< runs the simulation for period timesteps emitting it's state every emitrate timesteps */
+        void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */

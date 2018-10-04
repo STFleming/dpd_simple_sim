@@ -37,8 +37,8 @@ int main() {
    // emit the initial state (read by the web renderer interface)
    universe.emitJSON("state.json");
 
-   // run the universe for 10000 timesteps, emitting it's value every 0.5 seconds 
-   universe.run(1000000000, 0.07);
+   // run the universe on a single thread for many timesteps, emitting it's value every 0.07 seconds 
+   universe.seq_run(1000000000, 0.07);
 
    std::cout << "done\n";
 }
