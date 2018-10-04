@@ -21,7 +21,7 @@ void randF(Particle *me, Particle *other) {
 // Test program
 int main() {
    // size of the universe
-   const unsigned unisize = 200;
+   const unsigned unisize = 3000;
 
    // number of particles (beads) in the universe
    const unsigned n = 500;
@@ -38,7 +38,7 @@ int main() {
    universe.emitJSON("state.json");
 
    // run the universe for 10000 timesteps, emitting it's value every 0.5 seconds 
-   universe.run(1000000000, 0.1);
+   universe.run(1000000000, 0.07);
 
    std::cout << "done\n";
 }
