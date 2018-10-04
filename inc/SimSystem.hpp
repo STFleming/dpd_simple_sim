@@ -41,7 +41,7 @@ class SimSystem {
 
         // Particle management
         void addParticle(Particle *p); /**< Add a particle to the system */
-        void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
+        //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
 
         // exporting

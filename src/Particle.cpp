@@ -1,11 +1,16 @@
 #include "Particle.hpp"
 
 // constructor (sets the initial position of the particle)
-Particle::Particle(position_t pos) {
+Particle::Particle(position_t pos, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
    _pos = pos;
    _velocity = 0.0;
    _mass = 0.0;
    _id = 0xFFFFFFFF;
+
+   // assign the force functions
+   _conservative = conservative;
+   _drag = drag;
+   _random = random; 
 }
 
 // destructor (destroys this particle)

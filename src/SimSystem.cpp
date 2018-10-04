@@ -38,38 +38,39 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
 }
 
 // populates the universe with particles from a JSON file
-void SimSystem::populateFromJSON(std::string jsonfile) {
-    std::ifstream particle_file(jsonfile);
-    Json::Value root;
-    Json::Reader reader;    
-
-    // read in the JSON data
-    bool isJsonOK = (reader.parse(particle_file, root));
-    
-    if(isJsonOK) {
-        // read the particles from the JSON file
-        Json::Value particles = root["particles"];
-
-        // loop through the particles
-        for(int i=0; i < particles.size(); ++i) {
-           uint32_t cid = particles[i].get("id", 0xFFFFFFFF).asUInt();
-           position_t cpos;
-           cpos.x = particles[i].get("x", 0.0).asFloat(); 
-           cpos.y = particles[i].get("y", 0.0).asFloat(); 
-           cpos.z = particles[i].get("z", 0.0).asFloat(); 
-
-           // create the new particle
-           Particle *p = new Particle(cpos); // initialise with the position
-           p->setID(cid); // set it's ID 
-   
-           // add it to the universe
-           _particles->push_back(p);
-           allocateParticleToSpatialUnit(p);
-        }
-    } else {
-        std::runtime_error("Error: the input JSON file could not be parsed\n");
-    }
-}
+// no longer needed?
+//void SimSystem::populateFromJSON(std::string jsonfile) {
+//    std::ifstream particle_file(jsonfile);
+//    Json::Value root;
+//    Json::Reader reader;    
+//
+//    // read in the JSON data
+//    bool isJsonOK = (reader.parse(particle_file, root));
+//    
+//    if(isJsonOK) {
+//        // read the particles from the JSON file
+//        Json::Value particles = root["particles"];
+//
+//        // loop through the particles
+//        for(int i=0; i < particles.size(); ++i) {
+//           uint32_t cid = particles[i].get("id", 0xFFFFFFFF).asUInt();
+//           position_t cpos;
+//           cpos.x = particles[i].get("x", 0.0).asFloat(); 
+//           cpos.y = particles[i].get("y", 0.0).asFloat(); 
+//           cpos.z = particles[i].get("z", 0.0).asFloat(); 
+//
+//           // create the new particle
+//           Particle *p = new Particle(cpos); // initialise with the position
+//           p->setID(cid); // set it's ID 
+//   
+//           // add it to the universe
+//           _particles->push_back(p);
+//           allocateParticleToSpatialUnit(p);
+//        }
+//    } else {
+//        std::runtime_error("Error: the input JSON file could not be parsed\n");
+//    }
+//}
 
 // emits the state of the system as a JSON file
 void SimSystem::emitJSON(std::string jsonfile) {
