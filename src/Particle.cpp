@@ -3,10 +3,10 @@
 // constructor (sets the initial position of the particle)
 Particle::Particle(position_t pos, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
    _pos = pos;
-   _velocity = 0.0;
+   _velocity = {0.0, 0.0, 0.0};
    _mass = 0.0;
    _id = 0xFFFFFFFF;
-   _force = 0.0;
+   _force = {0.0, 0.0, 0.0};
 
    // assign the force functions
    _conservative = conservative;
@@ -40,11 +40,13 @@ void Particle::setID(uint32_t id) {
 } 
 
 // getters and setters for the force of this particle
-void Particle::setForce(float force) {
-    _force = force;
+void Particle::setForce(vector_t force) {
+    _force.x = force.x;
+    _force.y = force.y;
+    _force.z = force.z;
 }
 
-float Particle::getForce(void) {
+vector_t Particle::getForce(void) {
     return _force;
 }
 

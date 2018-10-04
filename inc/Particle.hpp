@@ -16,8 +16,8 @@ class Particle {
         void setID(uint32_t id); /**< sets teh ID of the particle */
   
         // for updating the force of this particle
-        void setForce(float force); /**< sets a new force for this particle */
-        float getForce(void); /**< returns the current force of this particle */
+        void setForce(vector_t force); /**< sets a new force for this particle */
+        vector_t getForce(void); /**< returns the current force of this particle */
 
         // for calling the separate force functions
         void callConservative(Particle *other); /**< calls the conservative force and applied it to this */

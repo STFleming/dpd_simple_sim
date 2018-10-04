@@ -1,6 +1,6 @@
 current_dir=$(shell pwd)
 
-OBJS = bin/SimSystem.o bin/SpatialUnit.o bin/Particle.o bin/utils.o
+OBJS = bin/SimSystem.o bin/SpatialUnit.o bin/Particle.o bin/utils.o bin/Vector3D.o
 
 .PHONY: all clean
 
