@@ -1,16 +1,16 @@
 #include "utils.hpp"
 
-position_t randPos(float N){
-    position_t t_pos;
-    t_pos.x = (rand() / (float)RAND_MAX * N);
-    t_pos.y = (rand() / (float)RAND_MAX * N);
-    t_pos.z = (rand() / (float)RAND_MAX * N);
+Vector3D randPos(float N){
+    Vector3D t_pos;
+    float x = (rand() / (float)RAND_MAX * N);
+    float y = (rand() / (float)RAND_MAX * N);
+    float z = (rand() / (float)RAND_MAX * N);
+    t_pos.set(x,y,z);
     return t_pos; 
 }
 
-
-// distance function for computing the euclidean distance between two particles
-float dist(position_t a, position_t b) {
-    // calculate the position
-    return sqrt((a.x - b.x)*(a.x - b.x) + (a.y - b.y)*(a.y - b.y) + (a.z - b.z)*(a.z - b.z));
+// conversion function
+position_t vec2pos(Vector3D a) {
+    position_t t = {a.x(), a.y(), a.z()};
+    return t;
 }

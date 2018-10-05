@@ -1,7 +1,7 @@
 #include "Particle.hpp"
 
 // constructor (sets the initial position of the particle)
-Particle::Particle(position_t pos, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
+Particle::Particle(Vector3D pos, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
    _pos = pos;
    _velocity = Vector3D(0.0, 0.0, 0.0);
    _mass = 0.0;
@@ -19,12 +19,12 @@ Particle::~Particle() {
 }
 
 // sets a new position for this particle
-void Particle::setPos(position_t pos) {
-    _pos = pos;
+void Particle::setPos(Vector3D npos) {
+    _pos = npos;
 }
 
 // gets the current position of the particle
-position_t Particle::getPos(){
+Vector3D Particle::getPos(){
    return _pos; 
 }
 

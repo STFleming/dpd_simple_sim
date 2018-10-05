@@ -85,7 +85,7 @@ void SimSystem::emitJSON(std::string jsonfile) {
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
         Particle *p = *i;
-        out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x<<", \"y\":"<<p->getPos().y<<", \"z\":"<<p->getPos().z<<"}";
+        out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<"}";
         if(p->getID() != (_particles->size()-1) )
             out << ",\n";
         else
@@ -119,7 +119,7 @@ SimSystem::~SimSystem() {
 void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
     for(iterator i=begin(), ie=end(); i!=ie; ++i){
        SpatialUnit *cur = *i;
-       if(cur->checkPos(p->getPos())) {
+       if(cur->checkPos(vec2pos(p->getPos()))) {
           cur->addParticle(p);
           return;
        } 
@@ -142,7 +142,7 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                 Particle *p1 = *i;
                 Particle *p2 = *j;
                 if(p1 != p2) { // particles do not apply forces to themselves
-                    if ( dist(p1->getPos(), p2->getPos()) <= cutoff ) {
+                    if ( p1->getPos().dist(p2->getPos()) <= cutoff ) {
                         // this particle is in range
                         // make sure that we have not done this pairwise interaction already
                         bool already_pair = false;

@@ -35,10 +35,10 @@ bool SpatialUnit::checkPos(position_t p) {
 /**! add a particle to this spatial unit at position p */
 void SpatialUnit::addParticle(Particle* p) {
    // first check to make sure that we can actually add a particle
-   if(checkPos(p->getPos())) {
+   if(checkPos(vec2pos(p->getPos()))) {
        _particles->push_back(p); // add the particle 
        if(_verbosity >= 2)
-           printf("    spatial unit center=(x:%f,y:%f,z:%f) is hosting a particle at pos=(x:%f, y:%f, z:%f)\n", _pos.x, _pos.y, _pos.z, p->getPos().x, p->getPos().y, p->getPos().z);
+           printf("    spatial unit center=(x:%f,y:%f,z:%f) is hosting a particle at pos=(x:%f, y:%f, z:%f)\n", _pos.x, _pos.y, _pos.z, p->getPos().x(), p->getPos().y(), p->getPos().z());
    } else {
      std::runtime_error("Error: this particle cannot fit in within this cube!\n"); 
    } 
