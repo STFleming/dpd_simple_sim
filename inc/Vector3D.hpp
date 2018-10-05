@@ -1,4 +1,8 @@
 //! A 3D vector class for computing forces etc.. in the simple DPD particle simulator
+#ifndef __VECTOR_3D_H
+#define __VECTOR_3D_H
+
+#include <math.h>
 
 class Vector3D {
    public:
@@ -33,9 +37,17 @@ class Vector3D {
 
        // cross product
        Vector3D cross(Vector3D a); /**< computes the cross product between this and vector a */
+       
+       // magnitude
+       float mag(); /**< calculates the magnitude of this vector */
+   
+       // distance
+       float dist(Vector3D a); /**< calculates the euclidean distance */
 
    private:
        float _x;
        float _y;
        float _z; 
 };
+
+#endif /* __VECTOR_3D_H */

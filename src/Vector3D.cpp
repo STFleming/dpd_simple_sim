@@ -132,3 +132,14 @@ Vector3D Vector3D::cross(Vector3D a){
    c.set(x,y,z);
    return c;
 }
+
+// mag
+float Vector3D::mag(){
+   return sqrt(_x*_x + _y*_y + _z*_z);
+} 
+
+// dist
+float Vector3D::dist(Vector3D a) {
+   Vector3D c = *this - a; 
+   return c.mag();
+}
