@@ -4,6 +4,7 @@
 #include "utils.hpp"
 #include <cstdint>
 #include <functional>
+#include "Vector3D.hpp"
 
 // Particle class
 class Particle {
@@ -16,8 +17,8 @@ class Particle {
         void setID(uint32_t id); /**< sets teh ID of the particle */
   
         // for updating the force of this particle
-        void setForce(vector_t force); /**< sets a new force for this particle */
-        vector_t getForce(void); /**< returns the current force of this particle */
+        void setForce(Vector3D force); /**< sets a new force for this particle */
+        Vector3D getForce(void); /**< returns the current force of this particle */
 
         // for calling the separate force functions
         void callConservative(Particle *other); /**< calls the conservative force and applied it to this */
@@ -25,11 +26,11 @@ class Particle {
         void callRandom(Particle *other); /**< calls the random force function applied to this */
 
     private:
-        vector_t _velocity; /**< the current velocity of the particle */
+        Vector3D _velocity; /**< the current velocity of the particle */
         position_t _pos; /**< the current position of this particle*/ 
         float _mass; /**< the mass of this particle */
         uint32_t _id; /**< the unique ID for this particle */
-        vector_t _force; /**< the forces accumulated on this particle for this timestep */
+        Vector3D _force; /**< the forces accumulated on this particle for this timestep */
 
         // Force functions
         std::function<void(Particle * me, Particle * other)> _conservative; /**< the pairwise conservative force function */ 
