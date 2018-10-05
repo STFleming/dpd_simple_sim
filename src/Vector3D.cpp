@@ -51,9 +51,9 @@ void Vector3D::set(float x, float y, float z) {
 // vector * vector
 Vector3D Vector3D::operator*(Vector3D a) {
    Vector3D c;
-   float x = a.x() * _x;
-   float y = a.y() * _y;
-   float z = a.z() * _z;
+   float x =  _x * a.x();
+   float y =  _y * a.y();
+   float z =  _z * a.z();
    c.set(x,y,z);
    return c;
 }
@@ -61,9 +61,74 @@ Vector3D Vector3D::operator*(Vector3D a) {
 // vector * scalar
 Vector3D Vector3D::operator*(float a) {
    Vector3D c;
-   float x = a * _x;
-   float y = a * _y;
-   float z = a * _z;
+   float x = _x * a;
+   float y = _y * a;
+   float z = _z * a;
+   c.set(x,y,z);
+   return c;
+}
+
+// vector + vector
+Vector3D Vector3D::operator+(Vector3D a) {
+   Vector3D c;
+   float x =  _x  + a.x();
+   float y =  _y  + a.y();
+   float z =  _z  + a.z();
+   c.set(x,y,z);
+   return c;
+}
+
+// vector + scalar
+Vector3D Vector3D::operator+(float a) {
+   Vector3D c;
+   float x = _x + a;
+   float y = _y + a;
+   float z = _z + a;
+   c.set(x,y,z);
+   return c;
+}
+
+// vector - vector
+Vector3D Vector3D::operator-(Vector3D a) {
+   Vector3D c;
+   float x = _x - a.x();
+   float y = _y - a.y();
+   float z = _z - a.z();
+   c.set(x,y,z);
+   return c;
+}
+
+// vector - scalar
+Vector3D Vector3D::operator-(float a) {
+   Vector3D c;
+   float x = _x - a;
+   float y = _y - a;
+   float z = _z - a;
+   c.set(x,y,z);
+   return c;
+}
+
+// vector / scalar
+Vector3D Vector3D::operator/(float a) {
+   Vector3D c;
+   float x = _x / a;
+   float y = _y / a;
+   float z = _z / a;
+   c.set(x,y,z);
+   return c;
+}
+
+// dot product
+float Vector3D::dot(Vector3D a) {
+    return (_x * a.x()) + (_y * a.y()) + (_z * a.z());
+}
+
+// cross product
+Vector3D Vector3D::cross(Vector3D a){
+   Vector3D c;
+   float x = (_y*a.z()) - (_z*a.y()); 
+   float y = (_z*a.x()) - (_x*a.z()); 
+   float z = (_x*a.y()) - (_y*a.x()); 
    c.set(x,y,z);
    return c;
 }

@@ -16,8 +16,23 @@ class Vector3D {
 
        //         operations 
        // ----------------------------
+       // multiplication
        Vector3D operator*(Vector3D a); /**< multiple a vector to this */
        Vector3D operator*(float a); /**< multiple a scalar to this */
+       // addition
+       Vector3D operator+(Vector3D a); /**< add a vector to this */
+       Vector3D operator+(float a); /**< add a scalar to this */
+       // subtraction 
+       Vector3D operator-(Vector3D a); /**< subtract a vector from this */
+       Vector3D operator-(float a); /**< subtract a scalar to this */
+       // scalar division
+       Vector3D operator/(float a); /**< divide the vector by a scalar value */
+
+       // dot product
+       float dot(Vector3D a); /**< computes the dot product between this and vector a */
+
+       // cross product
+       Vector3D cross(Vector3D a); /**< computes the cross product between this and vector a */
 
    private:
        float _x;
