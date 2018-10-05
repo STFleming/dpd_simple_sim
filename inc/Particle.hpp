@@ -9,10 +9,13 @@
 // Particle class
 class Particle {
     public:
-        Particle(Vector3D pos, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
+        Particle(Vector3D pos, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
         ~Particle(); /**< destructor that destroys this particle */ 
         Vector3D getPos(); /**< get the position of this particle */
         void setPos(Vector3D npos); /**< set a new position for this particle */
+        Vector3D getVelo(); /**< gets the velocity for this particle */
+        void setVelo(Vector3D velo); /**< sets the velocity for this particle */
+        float getMass(); /**< return the mass of this particle */
         uint32_t getID(); /**< returns the ID for this particle */
         void setID(uint32_t id); /**< sets teh ID of the particle */
   

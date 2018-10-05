@@ -1,13 +1,14 @@
 #include "SimSystem.hpp"
 
 /**! Constructor: creates a problem of NxNxN cubes */
-SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
+SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosity) {
     _N = N;
     _D = D;
     _verbosity = verbosity;
     _t = 0.0; // simulation starts at t=0.0
     _ts = 0;
-    _dt = 0.05; // guess
+    _dt = dt; 
+    _r_c = r_c; // interaction cutoff 
     
     // create the global list of particles
     _particles = new std::vector<Particle *>();
@@ -40,41 +41,6 @@ SimSystem::SimSystem(float N, unsigned D, unsigned verbosity) {
     }
 }
 
-// populates the universe with particles from a JSON file
-// no longer needed?
-//void SimSystem::populateFromJSON(std::string jsonfile) {
-//    std::ifstream particle_file(jsonfile);
-//    Json::Value root;
-//    Json::Reader reader;    
-//
-//    // read in the JSON data
-//    bool isJsonOK = (reader.parse(particle_file, root));
-//    
-//    if(isJsonOK) {
-//        // read the particles from the JSON file
-//        Json::Value particles = root["particles"];
-//
-//        // loop through the particles
-//        for(int i=0; i < particles.size(); ++i) {
-//           uint32_t cid = particles[i].get("id", 0xFFFFFFFF).asUInt();
-//           position_t cpos;
-//           cpos.x = particles[i].get("x", 0.0).asFloat(); 
-//           cpos.y = particles[i].get("y", 0.0).asFloat(); 
-//           cpos.z = particles[i].get("z", 0.0).asFloat(); 
-//
-//           // create the new particle
-//           Particle *p = new Particle(cpos); // initialise with the position
-//           p->setID(cid); // set it's ID 
-//   
-//           // add it to the universe
-//           _particles->push_back(p);
-//           allocateParticleToSpatialUnit(p);
-//        }
-//    } else {
-//        std::runtime_error("Error: the input JSON file could not be parsed\n");
-//    }
-//}
-
 // emits the state of the system as a JSON file
 void SimSystem::emitJSON(std::string jsonfile) {
     std::ofstream out;
@@ -85,11 +51,14 @@ void SimSystem::emitJSON(std::string jsonfile) {
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
         Particle *p = *i;
-        out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<"}";
-        if(p->getID() != (_particles->size()-1) )
-            out << ",\n";
-        else
-            out << "\n";
+        // check to make sure the particle position makes sense
+        if (!isnan(p->getPos().x()) && !isnan(p->getPos().y()) && !isnan(p->getPos().z())) {
+            out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<"}";
+            if(p->getID() != (_particles->size()-1) )
+                out << ",\n";
+            else
+                out << "\n";
+        }
     }
 
     out << "]}\n";
@@ -132,7 +101,6 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 // this is the naive implementation of this algorithm (horrifically slow)
 void SimSystem::seq_run(uint32_t period, float emitrate) {
 
-    const float cutoff = 50.0; // randomly selecting a single cutoff for all forces
     unsigned start_ts = _ts;
     clock_t last_emit = clock();
     while(_ts <= start_ts + period) { // run for period timesteps
@@ -142,7 +110,7 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                 Particle *p1 = *i;
                 Particle *p2 = *j;
                 if(p1 != p2) { // particles do not apply forces to themselves
-                    if ( p1->getPos().dist(p2->getPos()) <= cutoff ) {
+                    if ( p1->getPos().dist(p2->getPos()) <= _r_c ) {
                         // this particle is in range
                         // make sure that we have not done this pairwise interaction already
                         bool already_pair = false;
@@ -169,9 +137,43 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
         } 
 
 
-        // update velocity and distance
+        // update v_i and r_i for each particle
+        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
+             Particle *p = *i;
+             float mass = p->getMass();
+             Vector3D delta_v = (p->getForce()/mass) * _dt;
+             // update velocity
+             p->setVelo(p->getVelo() + delta_v); 
 
-        // cleanup: clear forces, clear velocity
+             // update position & include wraparound
+             Vector3D point = p->getPos() +p->getVelo()/+_dt;
+
+             // wraparound x direction
+             if(point.x() < 0.0)
+                  point.x(point.x() + _N); 
+             if(point.x() >= _N)
+                  point.x(point.x() - _N); 
+
+             // wrapointaround y direction
+             if(point.y() < 0.0)
+                  point.y(point.y() + _N); 
+             if(point.y() >= _N)
+                  point.y(point.y() - _N); 
+
+             // wrapointaround z direction
+             if(point.z() < 0.0)
+                  point.z(point.z() + _N); 
+             if(point.z() >= _N)
+                  point.z(point.z() - _N); 
+
+             // update the position
+             p->setPos(point); 
+
+             // clear force 
+             p->setForce(Vector3D(0.0, 0.0, 0.0));
+        } 
+
+        // cleanup: 
         _seq_pairs->clear(); // we no longer need to track the pairs
 
         // do we want to emit the state of the simulation
@@ -240,3 +242,39 @@ void SimSystem::addParticle(Particle *p){
     _particles->push_back(p);     
     allocateParticleToSpatialUnit(p); // allocate particle to a processor
 }
+
+// populates the universe with particles from a JSON file
+// no longer needed?
+//void SimSystem::populateFromJSON(std::string jsonfile) {
+//    std::ifstream particle_file(jsonfile);
+//    Json::Value root;
+//    Json::Reader reader;    
+//
+//    // read in the JSON data
+//    bool isJsonOK = (reader.parse(particle_file, root));
+//    
+//    if(isJsonOK) {
+//        // read the particles from the JSON file
+//        Json::Value particles = root["particles"];
+//
+//        // loop through the particles
+//        for(int i=0; i < particles.size(); ++i) {
+//           uint32_t cid = particles[i].get("id", 0xFFFFFFFF).asUInt();
+//           position_t cpos;
+//           cpos.x = particles[i].get("x", 0.0).asFloat(); 
+//           cpos.y = particles[i].get("y", 0.0).asFloat(); 
+//           cpos.z = particles[i].get("z", 0.0).asFloat(); 
+//
+//           // create the new particle
+//           Particle *p = new Particle(cpos); // initialise with the position
+//           p->setID(cid); // set it's ID 
+//   
+//           // add it to the universe
+//           _particles->push_back(p);
+//           allocateParticleToSpatialUnit(p);
+//        }
+//    } else {
+//        std::runtime_error("Error: the input JSON file could not be parsed\n");
+//    }
+//}
+

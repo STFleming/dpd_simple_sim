@@ -23,7 +23,7 @@
 //! A class used to define the system that is being simulated
 class SimSystem {
     public:
-        SimSystem(float N, unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
+        SimSystem(float N, float dt, float r_c,  unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
         ~SimSystem(); /**< Destructor */
 
         // Iterator type
@@ -53,6 +53,7 @@ class SimSystem {
     private:
         float _t; /**< the current simulation time */
         float _dt; /**< simulation timestep size */
+        float _r_c; /**< the cutoff distance */
         unsigned _ts; /**< the current integer timestep */
         float _N; /**< the size of the problem is NxNxN */
         unsigned _D; /**< the number of discrete cubes along an axis */

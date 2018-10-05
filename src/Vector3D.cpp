@@ -40,6 +40,11 @@ float Vector3D::x() { return _x; }
 float Vector3D::y() { return _y; }
 float Vector3D::z() { return _z; }
 
+// setters
+void Vector3D::x(float in) { _x = in; }
+void Vector3D::y(float in) { _y = in; }
+void Vector3D::z(float in) { _z = in; }
+
 // setter
 void Vector3D::set(float x, float y, float z) {
     _x = x;

@@ -16,6 +16,9 @@ class Vector3D {
        float x(); /**< returns the x value of this vector */
        float y(); /**< returns the x value of this vector */
        float z(); /**< returns the x value of this vector */
+       void x(float in); /**< sets the value of x */
+       void y(float in); /**< sets the value of y */
+       void z(float in); /**< sets the value of z */
        void set(float x, float y, float z); /**< sets the vector value */       
 
        //         operations 
@@ -32,7 +35,7 @@ class Vector3D {
        Vector3D operator-(float const& a); /**< subtract a scalar to this */
        // scalar division
        Vector3D operator/(float const& a); /**< divide the vector by a scalar value */
-
+   
        // dot product
        float dot(Vector3D a); /**< computes the dot product between this and vector a */
 
