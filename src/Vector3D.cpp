@@ -27,6 +27,7 @@ Vector3D::Vector3D(const Vector3D &in) {
    _z = in._z;
 }
 
+
 // clears the vector
 void Vector3D::clear() {
    _x = 0.0;
@@ -48,72 +49,72 @@ void Vector3D::set(float x, float y, float z) {
 
 // operators
 //----------------------
-// vector * vector
-Vector3D Vector3D::operator*(Vector3D a) {
+// vector * vector I don't think this is correct?
+Vector3D Vector3D::operator*(Vector3D const& a) {
    Vector3D c;
-   float x =  _x * a.x();
-   float y =  _y * a.y();
-   float z =  _z * a.z();
+   float x =  this->_x * a._x;
+   float y =  this->_y * a._y;
+   float z =  this->_z * a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector * scalar
-Vector3D Vector3D::operator*(float a) {
+Vector3D Vector3D::operator*(float const& a) {
    Vector3D c;
-   float x = _x * a;
-   float y = _y * a;
-   float z = _z * a;
+   float x = this->_x * a;
+   float y = this->_y * a;
+   float z = this->_z * a;
    c.set(x,y,z);
    return c;
 }
 
 // vector + vector
-Vector3D Vector3D::operator+(Vector3D a) {
+Vector3D Vector3D::operator+(Vector3D const& a) {
    Vector3D c;
-   float x =  _x  + a.x();
-   float y =  _y  + a.y();
-   float z =  _z  + a.z();
+   float x =  this->_x  + a._x;
+   float y =  this->_y  + a._y;
+   float z =  this->_z  + a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector + scalar
-Vector3D Vector3D::operator+(float a) {
+Vector3D Vector3D::operator+(float const& a) {
    Vector3D c;
-   float x = _x + a;
-   float y = _y + a;
-   float z = _z + a;
+   float x = this->_x + a;
+   float y = this->_y + a;
+   float z = this->_z + a;
    c.set(x,y,z);
    return c;
 }
 
 // vector - vector
-Vector3D Vector3D::operator-(Vector3D a) {
+Vector3D Vector3D::operator-(Vector3D const& a) {
    Vector3D c;
-   float x = _x - a.x();
-   float y = _y - a.y();
-   float z = _z - a.z();
+   float x = this->_x - a._x;
+   float y = this->_y - a._y;
+   float z = this->_z - a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector - scalar
-Vector3D Vector3D::operator-(float a) {
+Vector3D Vector3D::operator-(float const& a) {
    Vector3D c;
-   float x = _x - a;
-   float y = _y - a;
-   float z = _z - a;
+   float x = this->_x - a;
+   float y = this->_y - a;
+   float z = this->_z - a;
    c.set(x,y,z);
    return c;
 }
 
 // vector / scalar
-Vector3D Vector3D::operator/(float a) {
+Vector3D Vector3D::operator/(float const& a) {
    Vector3D c;
-   float x = _x / a;
-   float y = _y / a;
-   float z = _z / a;
+   float x = this->_x / a;
+   float y = this->_y / a;
+   float z = this->_z / a;
    c.set(x,y,z);
    return c;
 }

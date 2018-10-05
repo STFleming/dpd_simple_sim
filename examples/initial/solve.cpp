@@ -4,19 +4,23 @@
 #include "Particle.hpp"
 #include "utils.hpp"
 
-#define A_IJ 0.05 // the interaction strength
-#define R_C 50.0 // the interaction cutoff
-
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
-    // do the pairwise conservative force
-    //float f = 0.5 * A_IJ * (1 - (dist(me->getPos(), other->getPos()) / R_C ));
-    float r_ij = dist(me->getPos(), other->getPos());
-    float tmp_f = A_IJ*(1 - r_ij/R_C)/r_ij; 
-    
+
+    const float a_ij = 0.05; // the interaction strength
+    const float r_c = 1.5; // the interaction cutoff
+
+    Vector3D r_i = me->getPos();
+    Vector3D r_j = other->getPos();
+    float r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D r_ij = r_j - r_i; // vector between the points
+ 
+    // Equation 8.5 in the dl_meso manual
+    Vector3D force = (r_ij/r_ij_dist) * a_ij * (1.0 - (r_ij_dist/r_c));
+
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + f); 
-    other->setForce( other->getForce() + f); 
+    me->setForce( me->getForce() + force); 
+    other->setForce( other->getForce() + force); 
     return;
 }
 

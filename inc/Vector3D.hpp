@@ -21,16 +21,17 @@ class Vector3D {
        //         operations 
        // ----------------------------
        // multiplication
-       Vector3D operator*(Vector3D a); /**< multiple a vector to this */
-       Vector3D operator*(float a); /**< multiple a scalar to this */
+       Vector3D operator*(Vector3D const& a); /**< multiple a vector to this */
+       Vector3D operator*(float const& a); /**< multiple a scalar to this */
+       //Vector3D operator*(float a, Vector3D &b); /**< computers vector = vector * float */
        // addition
-       Vector3D operator+(Vector3D a); /**< add a vector to this */
-       Vector3D operator+(float a); /**< add a scalar to this */
+       Vector3D operator+(Vector3D const& a); /**< add a vector to this */
+       Vector3D operator+(float const& a); /**< add a scalar to this */
        // subtraction 
-       Vector3D operator-(Vector3D a); /**< subtract a vector from this */
-       Vector3D operator-(float a); /**< subtract a scalar to this */
+       Vector3D operator-(Vector3D const& a); /**< subtract a vector from this */
+       Vector3D operator-(float const& a); /**< subtract a scalar to this */
        // scalar division
-       Vector3D operator/(float a); /**< divide the vector by a scalar value */
+       Vector3D operator/(float const& a); /**< divide the vector by a scalar value */
 
        // dot product
        float dot(Vector3D a); /**< computes the dot product between this and vector a */
