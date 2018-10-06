@@ -5,13 +5,13 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.001
-#define R_C 10.5 
+#define DELTA_T 0.0005
+#define R_C 100.0 
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
 
-    const float a_ij = 0.005; // the interaction strength
+    const float a_ij = 2.90; // the interaction strength
     const float r_c = R_C; // the interaction cutoff
 
     Vector3D r_i = me->getPos();
@@ -31,9 +31,8 @@ void conF(Particle *me, Particle *other){
 // drag pairwie force declaration
 void dragF(Particle *me, Particle *other) {
     
-    const float a_ij = 0.005; // the interaction strength
     const float r_c = R_C; // the interaction cutoff
-    const float drag_coef = 0.005; // the drag coefficient (no idea what to set this at)
+    const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
 
     // position and distance
     Vector3D r_i = me->getPos();
@@ -63,11 +62,10 @@ void randF(Particle *me, Particle *other) {
    std::default_random_engine generator;
    std::normal_distribution<float> rand_var(0.0,1.0);
 
-   const float K_B = 0.001; // no idea
-   const float T = 0.0003; // also no idea
-   const float drag_coef = 0.005; // the drag coefficient (no idea what to set this at)
-   const float sigma_ij = 2*drag_coef*K_B*T; // the temperature coef
-   const float dt = DELTA_T; // another guess
+   const float K_BT = 5.0;
+   const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
+   const float sigma_ij = 2*drag_coef*K_BT; // the temperature coef
+   const float dt = DELTA_T; 
    const float r_c = R_C; // the interaction cutoff
 
    // position and distance
@@ -91,19 +89,19 @@ void randF(Particle *me, Particle *other) {
 // Test program
 int main() {
    // size of the universe
-   const unsigned unisize = 3000;
+   const unsigned unisize = 1000;
 
    // number of particles (beads) in the universe
-   const unsigned n = 500;
+   const unsigned n = 1000;
 
    // mass of the particles
-   const float mass = 0.00001;
+   const float mass = 1.0;
 
    SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
    
    // Add some particles to the system
    for(unsigned i=0; i<n; i++) {
-       Particle *p = new Particle(randPos(unisize), mass, conF, dragF, randF);
+       Particle *p = new Particle(randPos(unisize), 0, mass, conF, dragF, randF);
        universe.addParticle(p);
    }
  

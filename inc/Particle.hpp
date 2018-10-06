@@ -9,7 +9,7 @@
 // Particle class
 class Particle {
     public:
-        Particle(Vector3D pos, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
+        Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
         ~Particle(); /**< destructor that destroys this particle */ 
         Vector3D getPos(); /**< get the position of this particle */
         void setPos(Vector3D npos); /**< set a new position for this particle */
@@ -18,6 +18,7 @@ class Particle {
         float getMass(); /**< return the mass of this particle */
         uint32_t getID(); /**< returns the ID for this particle */
         void setID(uint32_t id); /**< sets teh ID of the particle */
+        uint32_t getType(); /**< gets the type of this particle */
   
         // for updating the force of this particle
         void setForce(Vector3D force); /**< sets a new force for this particle */
@@ -34,6 +35,7 @@ class Particle {
         float _mass; /**< the mass of this particle */
         uint32_t _id; /**< the unique ID for this particle */
         Vector3D _force; /**< the forces accumulated on this particle for this timestep */
+        uint32_t _type; /**< identifier for the type of this particle (user configurable) */
 
         // Force functions
         std::function<void(Particle * me, Particle * other)> _conservative; /**< the pairwise conservative force function */ 

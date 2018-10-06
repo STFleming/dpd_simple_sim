@@ -53,7 +53,7 @@ void SimSystem::emitJSON(std::string jsonfile) {
         Particle *p = *i;
         // check to make sure the particle position makes sense
         if (!isnan(p->getPos().x()) && !isnan(p->getPos().y()) && !isnan(p->getPos().z())) {
-            out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<"}";
+            out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<", \"type\":"<<p->getType()<<"}";
             if(p->getID() != (_particles->size()-1) )
                 out << ",\n";
             else
@@ -143,11 +143,17 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              float mass = p->getMass();
              Vector3D delta_v = (p->getForce()/mass) * _dt;
              // update velocity
-             p->setVelo(p->getVelo() + delta_v); 
+             //p->setVelo(p->getVelo() + delta_v); 
+             p->setVelo(delta_v); 
 
              // update position & include wraparound
              Vector3D point = p->getPos() +p->getVelo()/+_dt;
 
+             // testing out fmod?
+             //point.x(fmod(point.x(), _N));
+             //point.y(fmod(point.y(), _N));
+             //point.z(fmod(point.z(), _N));
+             
              // wraparound x direction
              if(point.x() < 0.0)
                   point.x(point.x() + _N); 

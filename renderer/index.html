@@ -6,7 +6,7 @@
 <svg width="1900" height="1200"></svg>
 <script>
 
-    var data    = [], min = max = 1500;
+    var data    = [], min = max = 500;
     var origin  = [860, 520], startAngle = Math.PI/8, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
@@ -25,9 +25,10 @@
                x: Math.round(particles[i].x - max),
                y: Math.round(particles[i].y - max),
                z: Math.round(particles[i].z - max),
-               id: particles[i].id
+               id: particles[i].id,
+               type: particles[i].type
              });
-             //console.log(data[i]);
+             console.log(data[i]);
         }
         return p_pos;
     }
@@ -35,7 +36,7 @@
     data = getNewData("state.json");
 
     var _3d = d3._3d()
-        .scale(0.3)
+        .scale(0.5)
         .origin(origin)
         .rotateX(startAngle)
         .rotateY(startAngle)
@@ -48,11 +49,11 @@
 
     // ------------------- auto rotate -------------------------
     // code to slowly rotate the cube of particles
-    //var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
-    //function autorotater() {
-    //    beta -= 0.0005;
-    //    processData(_3d.rotateY(beta + startAngle)(data));
-    //} 
+    var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
+    function autorotater() {
+        beta -= 0.001;
+        processData(_3d.rotateY(beta + startAngle)(data));
+    } 
 
 
     // ---------------------- web sockets ----------------------
@@ -126,10 +127,10 @@
             .enter()
             .append('circle')
             .merge(points)
-            //.attr('fill',   function(d, i){ return color(i); })
-            //.attr('stroke', function(d, i){ return d3.color(color(i)).darker(0.5); })
-            .attr('fill',   "green")
-            .attr('stroke', "green")
+            .attr('fill',   function(d, i){ return color(d.type); })
+            .attr('stroke', function(d, i){ return d3.color(color(d.type)).darker(0.5); })
+            //.attr('fill',   function(d) {return color(d.type);})
+            //.attr('stroke', function(d) {return color(d.type);})
             .sort(function(a, b){    return d3.descending(a.rotated.z, b.rotated.z); })
             .attr('cx', function(d){ return d.projected.x; })
             .attr('cy', function(d){ return d.projected.y; })
