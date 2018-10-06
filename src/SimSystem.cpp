@@ -110,7 +110,7 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                 Particle *p1 = *i;
                 Particle *p2 = *j;
                 if(p1 != p2) { // particles do not apply forces to themselves
-                    if ( p1->getPos().dist(p2->getPos()) <= _r_c ) {
+                    if ( p1->getPos().toroidal_dist(p2->getPos(), _N) <= _r_c ) {
                         // this particle is in range
                         // make sure that we have not done this pairwise interaction already
                         bool already_pair = false;
@@ -155,22 +155,28 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              //point.z(fmod(point.z(), _N));
              
              // wraparound x direction
-             if(point.x() < 0.0)
-                  point.x(point.x() + _N); 
-             if(point.x() >= _N)
-                  point.x(point.x() - _N); 
+             while( (point.x() < 0.0) || (point.x() >= _N)) {
+                 if(point.x() < 0.0)
+                      point.x(point.x() + _N); 
+                 if(point.x() >= _N)
+                      point.x(point.x() - _N); 
+             }
 
              // wrapointaround y direction
-             if(point.y() < 0.0)
-                  point.y(point.y() + _N); 
-             if(point.y() >= _N)
-                  point.y(point.y() - _N); 
+             while( (point.y() < 0.0) || (point.y() >= _N)) {
+                 if(point.y() < 0.0)
+                      point.y(point.y() + _N); 
+                 if(point.y() >= _N)
+                      point.y(point.y() - _N); 
+             }
 
              // wrapointaround z direction
-             if(point.z() < 0.0)
-                  point.z(point.z() + _N); 
-             if(point.z() >= _N)
-                  point.z(point.z() - _N); 
+             while( (point.z() < 0.0) || (point.z() >= _N)) {
+                 if(point.z() < 0.0)
+                      point.z(point.z() + _N); 
+                 if(point.z() >= _N)
+                      point.z(point.z() - _N); 
+             }
 
              // update the position
              p->setPos(point); 
