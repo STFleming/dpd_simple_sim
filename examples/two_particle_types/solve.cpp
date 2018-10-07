@@ -5,10 +5,11 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.01
+#define DELTA_T 4.0
+#define UNISIZE_D 1000.0 // the size of a single dimension of the universe
 #define R_C 100.0 
 
-const float A[2][2] = { {0.1, 25.5}, {25.5, 0.1}}; // interaction matrix
+const float A[2][2] = { {1.0, 255.0}, {255.0, 1.0}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -18,7 +19,7 @@ void conF(Particle *me, Particle *other){
 
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.dist(r_j); // get the distance
+    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
     Vector3D r_ij = r_j - r_i; // vector between the points
  
     // Equation 8.5 in the dl_meso manual
@@ -39,7 +40,7 @@ void dragF(Particle *me, Particle *other) {
     // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.dist(r_j); // get the distance
+    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
     Vector3D r_ij = r_j - r_i; // vector between the points
  
     // switching function
@@ -73,7 +74,7 @@ void randF(Particle *me, Particle *other) {
    // position and distance
    Vector3D r_i = me->getPos();
    Vector3D r_j = other->getPos();
-   float r_ij_dist = r_i.dist(r_j); // get the distance
+   float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
    Vector3D r_ij = r_j - r_i; // vector between the points
 
    // switching function
@@ -91,14 +92,14 @@ void randF(Particle *me, Particle *other) {
 // Test program
 int main() {
    // size of the universe
-   const unsigned unisize = 1000;
+   const float unisize = UNISIZE_D;
 
    // number of particles (beads) in the universe
-   const unsigned n = 3000;
+   const unsigned n = 1000;
 
    // mass of the particles
-   const float mass_p0 = 10.0;
-   const float mass_p1 = 13.0;
+   const float mass_p0 = 100.0;
+   const float mass_p1 = 100.0;
 
    SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
    
