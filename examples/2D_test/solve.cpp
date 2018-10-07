@@ -117,10 +117,10 @@ int main() {
    // Add some particles to the system
    for(unsigned i=0; i<n/2; i++) {
        // add a particle with type 0
-       Particle *p1 = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
+       Particle *p1 = new Particle(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
        universe.addParticle(p1);
        // add a particle with type 1 
-       Particle *p2 = new Particle(randPos(unisize), 1, mass_p1, conF, dragF, randF);
+       Particle *p2 = new Particle(rand2DPos(unisize), 1, mass_p1, conF, dragF, randF);
        universe.addParticle(p2);
    }
  

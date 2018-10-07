@@ -25,7 +25,7 @@ function sendUpdate(wss, update_str) {
     wss.clients.forEach(function each(client) {
      if(client !== wss && client.readyState == WebSocket.OPEN) {
       client.send(update_str);
-      //console.log(update_str);
+      console.log(update_str);
      }
     });
 }

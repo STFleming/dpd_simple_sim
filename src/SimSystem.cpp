@@ -144,9 +144,18 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
              Particle *p = *i;
              float mass = p->getMass();
-             Vector3D delta_v = (p->getForce()/mass) * _dt;
+             Vector3D delta_v = (p->getForce()/mass) * _dt + p->getVelo();
              // update velocity
              //p->setVelo(p->getVelo() + delta_v); 
+             
+             const float speedlimit = 1.0*0.8;
+             if (delta_v.mag() >= speedlimit) {
+                   //printf("Speed limit has been exceeded delta_v: %.2f  ", delta_v.mag());
+                   float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
+                   delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
+                   //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
+      
+             }
              p->setVelo(delta_v); 
 
              // update position & include wraparound

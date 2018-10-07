@@ -12,6 +12,9 @@ typedef struct _position_t { float x; float y; float z; } position_t;
 //! generates a random position within a given space (NxNxN)
 Vector3D randPos(float N);
 
+//! generates a random position within a given space (NxN)
+Vector3D rand2DPos(float N);
+
 //! convert between a Vector3D and a point (position_t)
 position_t vec2pos(Vector3D a);
 
