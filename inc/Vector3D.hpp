@@ -3,7 +3,7 @@
 #define __VECTOR_3D_H
 
 #include <math.h>
-#include <stdlib.h>
+//#include <cmath.h>
 
 class Vector3D {
    public:

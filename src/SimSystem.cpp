@@ -58,6 +58,9 @@ void SimSystem::emitJSON(std::string jsonfile) {
                 out << ",\n";
             else
                 out << "\n";
+        } else {
+           printf("Error: NaN encountered when trying to export state of particle: %u\n", p->getID());
+           exit(1);
         }
     }
 
@@ -149,34 +152,29 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              // update position & include wraparound
              Vector3D point = p->getPos() +p->getVelo()/+_dt;
 
-             // testing out fmod?
-             //point.x(fmod(point.x(), _N));
-             //point.y(fmod(point.y(), _N));
-             //point.z(fmod(point.z(), _N));
-             
              // wraparound x direction
-             while( (point.x() < 0.0) || (point.x() >= _N)) {
+             //while( (point.x() < 0.0) || (point.x() >= _N)) {
                  if(point.x() < 0.0)
                       point.x(point.x() + _N); 
                  if(point.x() >= _N)
                       point.x(point.x() - _N); 
-             }
+             //}
 
              // wrapointaround y direction
-             while( (point.y() < 0.0) || (point.y() >= _N)) {
+             //while( (point.y() < 0.0) || (point.y() >= _N)) {
                  if(point.y() < 0.0)
                       point.y(point.y() + _N); 
                  if(point.y() >= _N)
                       point.y(point.y() - _N); 
-             }
+             //}
 
              // wrapointaround z direction
-             while( (point.z() < 0.0) || (point.z() >= _N)) {
+             //while( (point.z() < 0.0) || (point.z() >= _N)) {
                  if(point.z() < 0.0)
                       point.z(point.z() + _N); 
                  if(point.z() >= _N)
                       point.z(point.z() - _N); 
-             }
+             //}
 
              // update the position
              p->setPos(point); 

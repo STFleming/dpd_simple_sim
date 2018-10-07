@@ -22,9 +22,9 @@
         var particles = JSON_object.particles;
         for(var i = 0; i<particles.length; i++) {
             p_pos.push({
-               x: Math.round(particles[i].x - max),
-               y: Math.round(particles[i].y - max),
-               z: Math.round(particles[i].z - max),
+               x: Math.round(particles[i].x*100.0) - max,
+               y: Math.round(particles[i].y*100.0) - max,
+               z: Math.round(particles[i].z*100.0) - max,
                id: particles[i].id,
                type: particles[i].type
              });
@@ -49,7 +49,7 @@
 
     // ------------------- auto rotate -------------------------
     // code to slowly rotate the cube of particles
-    var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
+    //var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
     function autorotater() {
         beta -= 0.001;
         processData(_3d.rotateY(beta + startAngle)(data));

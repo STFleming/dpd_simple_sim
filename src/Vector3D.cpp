@@ -153,9 +153,9 @@ float Vector3D::dist(Vector3D a) {
 // calculate the toroidal distance
 float Vector3D::toroidal_dist(Vector3D a, float N) {
 
-    float dx = abs(a.x() - _x);
-    float dy = abs(a.y() - _y);
-    float dz = abs(a.z() - _z);
+    float dx = fabs(a.x() - _x);
+    float dy = fabs(a.y() - _y);
+    float dz = fabs(a.z() - _z);
 
     if(dx > (N/2)) {
         dx = N - dx; 
