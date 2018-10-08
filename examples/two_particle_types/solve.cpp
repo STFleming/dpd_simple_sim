@@ -9,7 +9,7 @@
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
-const float A[2][2] = { {0.25, 4.0}, {4.0, 0.25}}; // interaction matrix
+const float A[2][2] = { {-1.0, 2.0}, {2.0, -1.0}}; // interaction matrix
 //const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
 
 // conservative pairwise force declaration
