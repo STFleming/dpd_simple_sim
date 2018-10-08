@@ -160,10 +160,10 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              //p->setVelo(delta_v); 
 
              // update position & include wraparound
-             Vector3D point = p->getPos() +p->getVelo()*_dt;
+             //Vector3D point = p->getPos() +p->getVelo()*_dt;
 
              // higher-order euler 
-             //Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
+             Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
 
              // wraparound x direction
              //while( (point.x() < 0.0) || (point.x() >= _N)) {

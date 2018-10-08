@@ -5,12 +5,12 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 1.0/64 
-#define UNISIZE_D 5.0 // the size of a single dimension of the universe
+#define DELTA_T 0.003 
+#define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
 //const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
-const float A[2][2] = { {0.005, 0.01}, {0.01, 0.005}}; // interaction matrix
+const float A[2][2] = { {0.01, 4.0}, {4.0, 0.01}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -26,14 +26,9 @@ void conF(Particle *me, Particle *other){
     // Equation 8.5 in the dl_meso manual
     Vector3D force = (r_ij/r_ij_dist) * a_ij * (1.0 - (r_ij_dist/r_c));
 
-    //printf("r_ij_dist = %.2f\n", r_ij_dist);
-    //printf("a_ij = %.2f\n", a_ij);
-    //printf("r_ij = x:%.2f y:%.2f z:%.2f\n", r_ij.x(), r_ij.y(), r_ij.z());
-    //printf("force = x:%.2f y:%.2f z:%.2f\n\n", force.x(), force.y(), force.z());
-
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force); 
+    other->setForce( other->getForce() + force*-1.0); 
     return;
 }
 
@@ -43,15 +38,14 @@ void dragF(Particle *me, Particle *other) {
     const float r_c = R_C; // the interaction cutoff
     const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
 
-    // position and distance
+   // // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
     float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-    //float r_ij_dist = r_i.dist(r_j); // get the distance
     Vector3D r_ij = r_j - r_i; // vector between the points
 
     // switching function
-    float w_d = (1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c);
+    float w_d = (1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c);
 
     // velocities
     Vector3D v_i = me->getVelo(); 
@@ -60,26 +54,18 @@ void dragF(Particle *me, Particle *other) {
      
     Vector3D force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (-1.0 * drag_coef); 
 
-    //printf("r_ij_dist = %.2f\n", r_ij_dist);
-    //printf("w_d = %.2f\n", w_d);
-    //printf("r_ij = x:%.2f y:%.2f z:%.2f\n", r_ij.x(), r_ij.y(), r_ij.z());
-    //printf("force = x:%.2f y:%.2f z:%.2f\n\n", force.x(), force.y(), force.z());
-
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force); 
+    other->setForce( other->getForce() + force*-1.0); 
     return;
 }
 
 // random pairwise force declaration
 void randF(Particle *me, Particle *other) {
 
-   std::default_random_engine generator;
-   std::normal_distribution<float> rand_var(0.0,1.0);
-
-   const float K_BT = 10.0;
+   const float K_BT = 500.0;
    const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
-   const float sigma_ij = 2*drag_coef*K_BT; // the temperature coef
+   const float sigma_ij = sqrt(2*drag_coef*K_BT); // the temperature coef
    const float dt = DELTA_T; 
    const float r_c = R_C; // the interaction cutoff
 
@@ -98,7 +84,7 @@ void randF(Particle *me, Particle *other) {
 
    // update the forces acting on the two particles
    me->setForce( me->getForce() + force); 
-   other->setForce( other->getForce() + force); 
+   other->setForce( other->getForce() + force*-1.0); 
    return;
 }
 
@@ -108,11 +94,11 @@ int main() {
    const float unisize = UNISIZE_D;
 
    // number of particles (beads) in the universe
-   const unsigned n = 100;
+   const unsigned n = 300;
 
    // mass of the particles
-   const float mass_p0 = 1000000.0;
-   const float mass_p1 = 1000000.0;
+   const float mass_p0 = 1.0;
+   const float mass_p1 = 1.0;
 
    SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
    

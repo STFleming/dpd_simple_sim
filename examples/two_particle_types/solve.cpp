@@ -5,12 +5,12 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 1.0/128 
+#define DELTA_T 0.003 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
-//const float A[2][2] = { {0.25, 16.0}, {16.0, 0.25}}; // interaction matrix
-const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
+const float A[2][2] = { {0.25, 4.0}, {4.0, 0.25}}; // interaction matrix
+//const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -36,13 +36,12 @@ void conF(Particle *me, Particle *other){
 void dragF(Particle *me, Particle *other) {
     
     const float r_c = R_C; // the interaction cutoff
-    const float drag_coef = 0.998; // the drag coefficient (no idea what to set this at)
+    const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
 
     // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
     float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-    //float r_ij_dist = r_i.dist(r_j); // get the distance
     Vector3D r_ij = r_j - r_i; // vector between the points
 
     // switching function
@@ -67,8 +66,8 @@ void randF(Particle *me, Particle *other) {
 
    float rand_var = (rand() / (float)RAND_MAX * 1.0);
 
-   const float K_BT = 20.0;
-   const float drag_coef = 0.998; // the drag coefficient (no idea what to set this at)
+   const float K_BT = 500.0;
+   const float drag_coef = 0.3; // the drag coefficient (no idea what to set this at)
    const float sigma_ij = sqrt(2*drag_coef*K_BT); // the temperature coef
    const float dt = DELTA_T; 
    const float r_c = R_C; // the interaction cutoff
