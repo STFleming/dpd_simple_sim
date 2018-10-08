@@ -14,7 +14,7 @@ launch_webserver: webserver solve
 
 webserver: solve 
 	cp $(LEVEL)/renderer/*.js ./
-	cp $(LEVEL)/renderer/*.html ./
+	cp $(LEVEL)/renderer/index.html ./
 
 solve: $(OBJS) solve.cpp
 	g++ -std=c++11 -O2 -I $(LEVEL)/inc solve.cpp -o solve $(LEVEL)/bin/*.o -ljsoncpp

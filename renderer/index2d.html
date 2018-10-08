@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<script src="https://d3js.org/d3.v4.min.js"></script>
+<script src="d3-3d.js"></script>
+<body>
+<svg width="1900" height="1200"></svg>
+<script>
+
+    var data    = [], min = max = 500;
+    var origin  = [860, 520], startAngle = Math.PI, beta = startAngle;
+    var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
+    var color   = d3.scaleOrdinal(d3.schemeCategory10);
+    var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
+    var mx, mouseX;
+
+    function getNewData(jsonfile) {
+        p_pos = [];
+        var request = new XMLHttpRequest();
+        request.open("GET", jsonfile, false);
+        request.send(null)
+        var JSON_object = JSON.parse(request.responseText);
+        var particles = JSON_object.particles;
+        for(var i = 0; i<particles.length; i++) {
+            p_pos.push({
+               x: Math.round(particles[i].x*100.0) - max,
+               y: Math.round(particles[i].y*100.0) - max,
+               z: Math.round(particles[i].z*100.0) - max,
+               id: particles[i].id,
+               type: particles[i].type
+             });
+             //console.log(data[i]);
+        }
+        return p_pos;
+    }
+
+    data = getNewData("state.json");
+
+    var _3d = d3._3d()
+        .scale(0.5)
+        .origin(origin)
+        .rotateX(startAngle)
+        .rotateY(startAngle)
+        .primitiveType('POINTS');
+
+
+    var data3D  = _3d(data);
+    var extentZ = d3.extent(data3D, function(d){ return d.rotated.z });
+    var zScale  = d3.scaleLinear().domain([extentZ[1]+10, extentZ[0]-10]).range([1, 8]);
+
+    // ------------------- auto rotate -------------------------
+    // code to slowly rotate the cube of particles
+    //var autorotate = setInterval( autorotater, 20 ); // rotate it a bit every 250ms?
+    function autorotater() {
+        beta -= 0.001;
+        processData(_3d.rotateY(beta + startAngle)(data));
+    } 
+
+
+    // ---------------------- web sockets ----------------------
+    const socket = new WebSocket('ws://localhost:8079');
+
+    socket.onmessage = function (evt) {
+        // update the particle position
+        //var d = JSON.parse(evt.data);
+        //for(var i=0; i<data.length; i++) {
+        //     if (data[i].id == d.id) {
+        //         //console.log("updating pos for point"+d.id);
+        //         data[i].x = Math.round(d.x);
+        //         data[i].y = Math.round(d.y);
+        //         data[i].z = Math.round(d.z);
+        //         data3D = _3d(data);
+        //         processData(data3D);
+        //         return;
+        //     }
+        //}
+        //console.log("ERROR: could not find a particle with id: "+d.id);
+        if(evt.data == "update") {
+            var tmp = getNewData("state.json");
+            for(var i=0; i<tmp.length; i++) {
+                for(var j=0; j<data.length; j++){
+                   if(data[i].id == tmp[i].id) {
+                      data[i].x = Math.round(tmp[i].x);
+                      data[i].y = Math.round(tmp[i].y);
+                      data[i].z = Math.round(tmp[i].z);
+                   }
+                }
+            }
+            data3D = _3d(data);
+            processData(data3D);
+        } else {
+          console.log("Error: we recvd a command other than update: "+evt.data);
+        }
+    }
+
+    // ---------------------- /web sockets ----------------------
+
+
+    // some rough stuff to find the center of the particles
+    //for(var j=0; j<vx.length; j++) {
+    //   var vx_sum = vx_sum + vx[j];
+    //   var vy_sum = vy_sum + vy[j];
+    //   var vz_sum = vz_sum + vz[j];
+    //}
+    //var vx_avg = Math.round(vx_sum/vx.length);
+    //var vy_avg = Math.round(vy_sum/vy.length);
+    //var vz_avg = Math.round(vz_sum/vz.length);
+
+    function dragStart(){
+        mx = d3.event.x;
+    }
+
+    function dragged(){
+        mouseX = mouseX || 0;
+        beta   = (d3.event.x - mx + mouseX) * Math.PI / 360 * (-1);
+        processData(_3d.rotateY(beta + startAngle)(data));
+    }
+
+    function dragEnd(){
+        mouseX = d3.event.x - mx + mouseX;
+    }
+
+    function processData(data){
+
+        var points = svg.selectAll('circle').data(data);
+
+        points
+            .enter()
+            .append('circle')
+            .merge(points)
+            .attr('fill',   function(d, i){ return color(d.type); })
+            .attr('stroke', function(d, i){ return d3.color(color(d.type)).darker(0.5); })
+            //.attr('fill',   function(d) {return color(d.type);})
+            //.attr('stroke', function(d) {return color(d.type);})
+            .sort(function(a, b){    return d3.descending(a.rotated.z, b.rotated.z); })
+            .attr('cx', function(d){ return d.projected.x; })
+            .attr('cy', function(d){ return d.projected.y; })
+            .attr('r' , function(d){ return zScale(d.rotated.z); });
+
+        points.exit().remove();
+    }
+
+    processData(data3D);
+</script>
+</body>

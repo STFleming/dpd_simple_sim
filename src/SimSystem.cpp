@@ -144,22 +144,26 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
         for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
              Particle *p = *i;
              float mass = p->getMass();
-             Vector3D delta_v = (p->getForce()/mass) * _dt + p->getVelo();
+             Vector3D acceleration = p->getForce()/mass;
+             Vector3D delta_v = (p->getForce()/mass) * _dt;
              // update velocity
-             //p->setVelo(p->getVelo() + delta_v); 
+             p->setVelo(p->getVelo() + delta_v); 
              
-             const float speedlimit = 1.0*0.8;
-             if (delta_v.mag() >= speedlimit) {
-                   //printf("Speed limit has been exceeded delta_v: %.2f  ", delta_v.mag());
-                   float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
-                   delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
-                   //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
+             //const float speedlimit = 2.0*0.95;
+             //if (delta_v.mag() >= speedlimit) {
+             //      //printf("Speed limit has been exceeded delta_v: %.2f  ", delta_v.mag());
+             //      float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
+             //      delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
+             //      //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
       
-             }
-             p->setVelo(delta_v); 
+             //}
+             //p->setVelo(delta_v); 
 
              // update position & include wraparound
-             Vector3D point = p->getPos() +p->getVelo()/+_dt;
+             Vector3D point = p->getPos() +p->getVelo()*_dt;
+
+             // higher-order euler 
+             //Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
 
              // wraparound x direction
              //while( (point.x() < 0.0) || (point.x() >= _N)) {
