@@ -129,6 +129,35 @@ float Vector3D::dot(Vector3D a) {
     return (_x * a.x()) + (_y * a.y()) + (_z * a.z());
 }
 
+// toroidal distance
+// returns this - a ( over a toroidal space NxNxN, where the cutoff is R_C)
+Vector3D Vector3D::toroidal_subtraction(Vector3D a, float N, float R_C) {
+
+  float diff_x = _x - a.x();
+  float diff_y = _y - a.y();
+  float diff_z = _z - a.z();
+
+  if(diff_x > R_C) {
+     diff_x = N - diff_x;
+  } else if (diff_x < -1.0*R_C) {
+     diff_x = N + diff_x;
+  }
+
+  if(diff_y > R_C) {
+    diff_y = N - diff_y;
+  } else if (diff_y < -1.0*R_C) {
+    diff_y = N + diff_y;
+  }
+
+  if(diff_z > R_C) {
+    diff_z = N - diff_z;
+  } else if (diff_z < -1.0*R_C) {
+    diff_z = N + diff_z;
+  }
+ 
+  return Vector3D(diff_x, diff_y, diff_z);  
+}
+
 // cross product
 Vector3D Vector3D::cross(Vector3D a){
    Vector3D c;
@@ -157,15 +186,15 @@ float Vector3D::toroidal_dist(Vector3D a, float N) {
     float dy = fabs(a.y() - _y);
     float dz = fabs(a.z() - _z);
 
-    if(dx > (N/2)) {
+    if(dx >= (N/2)) {
         dx = N - dx; 
     }  
 
-    if(dy > (N/2)) {
+    if(dy >= (N/2)) {
         dy = N - dy; 
     }  
 
-    if(dz > (N/2)) {
+    if(dz >= (N/2)) {
         dz = N - dz; 
     }  
 

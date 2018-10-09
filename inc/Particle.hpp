@@ -13,6 +13,7 @@ class Particle {
         ~Particle(); /**< destructor that destroys this particle */ 
         Vector3D getPos(); /**< get the position of this particle */
         void setPos(Vector3D npos); /**< set a new position for this particle */
+        Vector3D getPrevPos(); /**< get the previous position of this particle */
         Vector3D getVelo(); /**< gets the velocity for this particle */
         void setVelo(Vector3D velo); /**< sets the velocity for this particle */
         float getMass(); /**< return the mass of this particle */
@@ -32,6 +33,7 @@ class Particle {
     private:
         Vector3D _velocity; /**< the current velocity of the particle */
         Vector3D _pos; /**< the current position of this particle*/ 
+        Vector3D _prev_pos; /**< the current position of this particle*/ 
         float _mass; /**< the mass of this particle */
         uint32_t _id; /**< the unique ID for this particle */
         Vector3D _force; /**< the forces accumulated on this particle for this timestep */

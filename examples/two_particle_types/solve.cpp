@@ -5,7 +5,7 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.003 
+#define DELTA_T 0.0001 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 

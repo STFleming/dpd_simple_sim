@@ -3,6 +3,7 @@
 // constructor (sets the initial position of the particle)
 Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
    _pos = pos;
+   _prev_pos = pos;
    _velocity = Vector3D(0.0, 0.0, 0.0);
    _mass = mass;
    _id = 0xFFFFFFFF;
@@ -21,6 +22,7 @@ Particle::~Particle() {
 
 // sets a new position for this particle
 void Particle::setPos(Vector3D npos) {
+    _prev_pos = _pos;
     _pos = npos;
 }
 
@@ -28,6 +30,12 @@ void Particle::setPos(Vector3D npos) {
 Vector3D Particle::getPos(){
    return _pos; 
 }
+
+// gets the prev position of the particle
+Vector3D Particle::getPrevPos(){
+   return _pos; 
+}
+
 
 // gets the velocity for the particle
 Vector3D Particle::getVelo() {

@@ -36,6 +36,8 @@ class Vector3D {
        Vector3D operator-(float const& a); /**< subtract a scalar to this */
        // scalar division
        Vector3D operator/(float const& a); /**< divide the vector by a scalar value */
+       // toroidal subtraction
+       Vector3D toroidal_subtraction(Vector3D a, float N, float R_C);
    
        // dot product
        float dot(Vector3D a); /**< computes the dot product between this and vector a */
