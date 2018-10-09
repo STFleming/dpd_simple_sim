@@ -152,22 +152,22 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              //if((p->getID() == 0) && (p->getForce().mag() != 0.0)) {
              //}
 
-             const float speedlimit = 1.0*0.95;
-             if (p->getVelo().mag() >= speedlimit) {
-                   printf("[particle:%u] Speed limit has been exceeded velocity: %.8f \n",  p->getID(), p->getVelo().mag());
-                   Vector3D delta_r = p->getVelo()*_dt + acceleration*0.5*_dt*_dt;
-                   printf("------------------\n"); // dump the stats for this particle            
-                   printf("[particle:%u] force = %.8f\n", p->getID(), p->getForce().mag());
-                   printf("[particle:%u] acceleration = %.8f\n", p->getID(), acceleration.mag());
-                   printf("[particle:%u] delta_v = %.8f\n", p->getID(), delta_v.mag());
-                   printf("[particle:%u] velocity = %.8f\n", p->getID(), p->getVelo().mag());
-                   printf("[particle:%u] distance travlled = %.8f\n", p->getID(), delta_r.mag());
-                   float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
-                   //delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
-                   //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
-                   exit(0);
+             //const float speedlimit = 1.0*0.95;
+             //if (p->getVelo().mag() >= speedlimit) {
+             //      printf("[particle:%u] Speed limit has been exceeded velocity: %.8f \n",  p->getID(), p->getVelo().mag());
+             //      Vector3D delta_r = p->getVelo()*_dt + acceleration*0.5*_dt*_dt;
+             //      printf("------------------\n"); // dump the stats for this particle            
+             //      printf("[particle:%u] force = %.8f\n", p->getID(), p->getForce().mag());
+             //      printf("[particle:%u] acceleration = %.8f\n", p->getID(), acceleration.mag());
+             //      printf("[particle:%u] delta_v = %.8f\n", p->getID(), delta_v.mag());
+             //      printf("[particle:%u] velocity = %.8f\n", p->getID(), p->getVelo().mag());
+             //      printf("[particle:%u] distance travlled = %.8f\n", p->getID(), delta_r.mag());
+             //      float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
+             //      //delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
+             //      //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
+             //      exit(0);
       
-             }
+             //}
 
              // euler update position & include wraparound
              //Vector3D point = p->getPos() +p->getVelo()*_dt;
