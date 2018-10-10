@@ -207,10 +207,10 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
 
         // do we want to emit the state of the simulation
         if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-            emit_cnt++;
             std::stringstream curframe;
             curframe << "frames/state_" << emit_cnt << ".json"; 
             emitJSON(curframe.str()); //emit the frame into the frames folder for later retrieval
+            emit_cnt++;
 
             emitJSON("state.json"); // also replace the latest frame
             printf("update\n"); // update command set via stdout to nodejs server
