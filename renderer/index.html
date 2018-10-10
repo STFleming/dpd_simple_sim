@@ -76,6 +76,15 @@
         return p_pos;
     }
 
+    // beadFiltered(beadId) this returns true if the bead ID is in the filter list
+    function beadFilter(bead_type){
+      for(var i=0; i<filter_list.length; i++) {
+           if(bead_type == filter_list[i])
+              return true;
+      } 
+      return false;
+    }
+
     data = getNewData("state.json");
 
     var universe_scale=2.0;
@@ -173,7 +182,13 @@
             .enter()
             .append('circle')
             .merge(points)
-            .attr('fill',   function(d, i){ return color(d.type); })
+            .attr('fill',   function(d, i){  
+                                           if(beadFilter(d.type)) {
+                                             return "none";
+                                            } else {
+                                             return color(d.type); 
+                                            }
+                                           })
             .attr('stroke', function(d, i){ return d3.color(color(d.type)).darker(0.5); })
             //.attr('fill',   function(d) {return color(d.type);})
             //.attr('stroke', function(d) {return color(d.type);})
