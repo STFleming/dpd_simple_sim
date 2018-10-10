@@ -14,7 +14,7 @@
 
 <form name="filter_input">
      <input value="Replay"  type="button" onclick="replayFrames()" >
-     <input type="text" id="filter_id" placeholder="framerate">
+     <input type="text" id="replay_framerate" placeholder="framerate">
 </form>
 
 <svg width="1900" height="1200"></svg>
@@ -33,6 +33,7 @@
    // functions that replays the simulation up until this point
  
    function replayFrames() {
+    var framerate = parseInt(document.getElementById("replay_framerate").value);
     var cur_replay = 0;
     replay = true;
        let replayTimer = setTimeout(function showFrame(){
@@ -51,12 +52,12 @@
 
             cur_replay = cur_replay + 1;
             if(cur_replay < update_cnt) {
-                replayTimer = setTimeout(showFrame, 100);
+                replayTimer = setTimeout(showFrame, 1/framerate);
             } else {
               replay = false;
             } 
 
-        }, 100);
+        }, 1/framerate);
    }
 
    // function used to filter a bead type
