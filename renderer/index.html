@@ -4,12 +4,18 @@
 <script src="d3-3d.js"></script>
 <body>
 
+
 <form name="filter_input">
      <input value="Filter"  type="button" onclick="filterBeads()" >
      <input type="text" id="filter_id" placeholder="particle ID to filter&hellip;">
 </form>
 
-<p id="cur_filters_text"></p>
+<p id="cur_filters_text">  </p>
+
+<form name="filter_input">
+     <input value="Replay"  type="button" onclick="replayFrames()" >
+     <input type="text" id="filter_id" placeholder="framerate">
+</form>
 
 <svg width="1900" height="1200"></svg>
 <script>
@@ -21,6 +27,37 @@
     var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
     var mx, mouseX;
     var filter_list = [ ]; // list of beads that we don't want shown
+    var replay = false;
+    var update_cnt = 0;
+
+   // functions that replays the simulation up until this point
+ 
+   function replayFrames() {
+    var cur_replay = 0;
+    replay = true;
+       let replayTimer = setTimeout(function showFrame(){
+            var tmp = getNewData("frames/state_"+cur_replay+".json");
+            for(var i=0; i<tmp.length; i++) {
+                for(var j=0; j<data.length; j++){
+                   if(data[i].id == tmp[i].id) {
+                      data[i].x = Math.round(tmp[i].x);
+                      data[i].y = Math.round(tmp[i].y);
+                      data[i].z = Math.round(tmp[i].z);
+                   }
+                }
+            }
+            data3D = _3d(data);
+            processData(data3D);
+
+            cur_replay = cur_replay + 1;
+            if(cur_replay < update_cnt) {
+                replayTimer = setTimeout(showFrame, 100);
+            } else {
+              replay = false;
+            } 
+
+        }, 100);
+   }
 
    // function used to filter a bead type
    function filterBeads(event) {
@@ -129,22 +166,25 @@
         //     }
         //}
         //console.log("ERROR: could not find a particle with id: "+d.id);
-        if(evt.data == "update") {
-            var tmp = getNewData("state.json");
-            for(var i=0; i<tmp.length; i++) {
-                for(var j=0; j<data.length; j++){
-                   if(data[i].id == tmp[i].id) {
-                      data[i].x = Math.round(tmp[i].x);
-                      data[i].y = Math.round(tmp[i].y);
-                      data[i].z = Math.round(tmp[i].z);
-                   }
+        if(!replay) {
+            if(evt.data == "update") {
+                var tmp = getNewData("state.json");
+                for(var i=0; i<tmp.length; i++) {
+                    for(var j=0; j<data.length; j++){
+                       if(data[i].id == tmp[i].id) {
+                          data[i].x = Math.round(tmp[i].x);
+                          data[i].y = Math.round(tmp[i].y);
+                          data[i].z = Math.round(tmp[i].z);
+                       }
+                    }
                 }
+                data3D = _3d(data);
+                processData(data3D);
+                update_cnt=update_cnt+1;
+            } else {
+              console.log("Error: we recvd a command other than update: "+evt.data);
             }
-            data3D = _3d(data);
-            processData(data3D);
-        } else {
-          console.log("Error: we recvd a command other than update: "+evt.data);
-        }
+         }
     }
 
     // ---------------------- /web sockets ----------------------

@@ -36,6 +36,13 @@ r1.on('line', function(line) {
   sendUpdate(wss, line); 
 });
 
+
+//fs.readdir('/frames', function(err, list) {
+//    list.forEach(function(file) {
+//        console.log(file);
+//    });
+//});
+
 app.get('/', (req, res) => res.sendFile(path.join(__dirname+'/index.html')));
 app.get('/state.json', (req, res) => res.sendFile(path.join(__dirname+'/state.json')));
 app.get('/state_frame.json', (req, res) => res.sendFile(path.join(__dirname+'/state_frame.json')));

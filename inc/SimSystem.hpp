@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <cstdio>
 #include <string>
+#include <sstream>
 
 #include "Particle.hpp"
 #include "utils.hpp"
