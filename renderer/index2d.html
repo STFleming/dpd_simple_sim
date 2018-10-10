@@ -7,7 +7,7 @@
 <script>
 
     var data    = [], min = max = 500;
-    var origin  = [860, 520], startAngle = Math.PI, beta = startAngle;
+    var origin  = [860, 300], startAngle = Math.PI, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
     var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
@@ -35,8 +35,11 @@
 
     data = getNewData("state.json");
 
+    var universe_scale=5.0;
+    var bead_scale=0.95;
+
     var _3d = d3._3d()
-        .scale(0.5)
+        .scale(1/universe_scale)
         .origin(origin)
         .rotateX(startAngle)
         .rotateY(startAngle)
@@ -134,7 +137,7 @@
             .sort(function(a, b){    return d3.descending(a.rotated.z, b.rotated.z); })
             .attr('cx', function(d){ return d.projected.x; })
             .attr('cy', function(d){ return d.projected.y; })
-            .attr('r' , function(d){ return zScale(d.rotated.z); });
+            .attr('r' , function(d){ return 2.22*bead_scale*zScale(d.rotated.z); });
 
         points.exit().remove();
     }

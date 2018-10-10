@@ -3,6 +3,14 @@
 <script src="https://d3js.org/d3.v4.min.js"></script>
 <script src="d3-3d.js"></script>
 <body>
+
+<form name="filter_input">
+     <input name="Submit"  type="button" onclick="filterBeads()" >
+     <input type="text" id="filter_id" placeholder="particle ID to filter&hellip;">
+</form>
+
+<p id="cur_filters_text"></p>
+
 <svg width="1900" height="1200"></svg>
 <script>
 
@@ -12,6 +20,41 @@
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
     var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
     var mx, mouseX;
+    var filter_list = [ ]; // list of beads that we don't want shown
+
+   // function used to filter a bead type
+   function filterBeads(event) {
+     var filter_id = document.getElementById("filter_id").value;
+     var i = filter_list.length;
+     while(i--) {
+        if(filter_id == filter_list[i]) {
+           console.log("removing filter for particle type "+filter_id);
+           filter_list.splice(i, 1);
+           renderFilterList(filter_id);
+           return;
+        }
+     }
+     console.log("Adding filter for particle type "+ filter_id);
+     filter_list.push(filter_id);
+     renderFilterList();
+     return;
+   }
+
+   // maintains a list of filters on the page
+   function renderFilterList(filter_id){
+      // clear the text
+      d3.select("p").text("");
+      // create filter text string
+      var filter_string = "";
+      if(filter_list.length != 0) {
+         filter_string = "Filtering: ";
+      }
+      for(var i=0; i<filter_list.length; i++) {
+         filter_string = filter_string + " " + filter_list[i];
+      }
+      var p = d3.select("p")
+                .text(filter_string);
+   }
 
     function getNewData(jsonfile) {
         p_pos = [];
@@ -35,8 +78,11 @@
 
     data = getNewData("state.json");
 
+    var universe_scale=2.0;
+    var bead_scale=1.5;
+
     var _3d = d3._3d()
-        .scale(0.5)
+        .scale(1/universe_scale)
         .origin(origin)
         .rotateX(startAngle)
         .rotateY(startAngle)
@@ -134,7 +180,7 @@
             .sort(function(a, b){    return d3.descending(a.rotated.z, b.rotated.z); })
             .attr('cx', function(d){ return d.projected.x; })
             .attr('cy', function(d){ return d.projected.y; })
-            .attr('r' , function(d){ return zScale(d.rotated.z); });
+            .attr('r' , function(d){ return 2.22*bead_scale*zScale(d.rotated.z); });
 
         points.exit().remove();
     }

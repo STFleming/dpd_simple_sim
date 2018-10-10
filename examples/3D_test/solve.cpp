@@ -6,7 +6,7 @@
 #include <random>
 
 #define DELTA_T 0.01 
-#define UNISIZE_D 20.0 // the size of a single dimension of the universe
+#define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
 //const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
@@ -99,7 +99,7 @@ int main() {
    const float unisize = UNISIZE_D;
 
    // number of particles (beads) in the universe
-   const unsigned n = 400;
+   const unsigned n = 1000;
 
    // mass of the particles
    const float mass_p0 = 1.0;
@@ -109,12 +109,12 @@ int main() {
    
    // Add some particles to the system
    for(unsigned i=0; i<(3*n)/4; i++) {
-       Particle *p1 = new Particle(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
+       Particle *p1 = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
        universe.addParticle(p1);
    }
 
    for(unsigned i=0; i<n/4; i++) {
-       Particle *p2 = new Particle(rand2DPos(unisize), 1, mass_p1, conF, dragF, randF);
+       Particle *p2 = new Particle(randPos(unisize), 1, mass_p1, conF, dragF, randF);
        universe.addParticle(p2);
    }
 
