@@ -30,18 +30,26 @@ function sendUpdate(wss, update_str) {
     });
 }
 
+// updates the frames folder
+function update_frames() {
+    fs.readdir('frames', function(err, files) {
+        if(err) {
+          console.error("could not list the directory", err); 
+        } 
+        files.forEach(function(file) {
+            //console.log(file);
+            app.get('/frames/'+file, (req, res) => res.sendFile((path.join(__dirname+'/frames/'+file))));
+        });
+    });
+}
+
 // get stdin data which will be passed to the rendered graph
 // this will be the output of the executive
 r1.on('line', function(line) {
   sendUpdate(wss, line); 
+  update_frames();
 });
 
-
-//fs.readdir('/frames', function(err, list) {
-//    list.forEach(function(file) {
-//        console.log(file);
-//    });
-//});
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname+'/index.html')));
 app.get('/state.json', (req, res) => res.sendFile(path.join(__dirname+'/state.json')));
