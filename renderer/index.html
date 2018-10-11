@@ -50,9 +50,9 @@
             data3D = _3d(data);
             processData(data3D);
 
-            cur_replay = cur_replay + 1;
+            cur_replay = cur_replay + framerate;
             if(cur_replay < update_cnt) {
-                replayTimer = setTimeout(showFrame, 1/framerate);
+                replayTimer = setTimeout(showFrame, 50);
             } else {
               replay = false;
             } 
@@ -69,12 +69,14 @@
            console.log("removing filter for particle type "+filter_id);
            filter_list.splice(i, 1);
            renderFilterList(filter_id);
+           processData(data);
            return;
         }
      }
      console.log("Adding filter for particle type "+ filter_id);
      filter_list.push(filter_id);
      renderFilterList();
+     processData(data);
      return;
    }
 
