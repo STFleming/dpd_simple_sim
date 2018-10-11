@@ -31,23 +31,17 @@ function sendUpdate(wss, update_str) {
 }
 
 // updates the frames folder
-function update_frames() {
-    fs.readdir('frames', function(err, files) {
-        if(err) {
-          console.error("could not list the directory", err); 
-        } 
-        files.forEach(function(file) {
-            //console.log(file);
-            app.get('/frames/'+file, (req, res) => res.sendFile((path.join(__dirname+'/frames/'+file))));
-        });
-    });
+function update_frames(f) {
+    app.get('/frames/state_'+f+'.json', (req,res) => res.sendFile(path.join(__dirname+'/frames/state_'+f+'.json'))); 
 }
 
 // get stdin data which will be passed to the rendered graph
 // this will be the output of the executive
+var frame_cnt = 0;
 r1.on('line', function(line) {
   sendUpdate(wss, line); 
-  update_frames();
+  update_frames(frame_cnt);
+  frame_cnt = frame_cnt + 1;
 });
 
 
