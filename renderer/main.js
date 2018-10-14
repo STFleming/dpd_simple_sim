@@ -35,9 +35,29 @@ function update_frames(f) {
     app.get('/frames/state_'+f+'.json', (req,res) => res.sendFile(path.join(__dirname+'/frames/state_'+f+'.json'))); 
 }
 
+// get the number of already completed frames from the frames folder and store it in an expr.json file
+var frame_cnt;
+fs.readdir('frames', (err, files) => {
+   frame_cnt = files.length;
+   files.forEach( function(file) {
+      //console.log("Adding get rule for ./frames/" + file);
+      app.get('/frames/'+file, (req,res) => res.sendFile(path.join(__dirname+'/frames/'+file))); 
+   });
+
+   // write the frame_cnt to the expr.json file
+   frame_cnt_json = "{ \"num_frames\":"+frame_cnt+"}"
+   fs.writeFile("./expr.json", frame_cnt_json, function (err) {
+      if(err) {
+         return console.log(err);
+      }
+      console.log("The expr.json file was saved\n");
+   }); 
+   // provide a GET rule for the expr.json file
+   app.get('/expr.json', (req, res) => res.sendFile(path.join(__dirname+'/expr.json')));
+});
+
 // get stdin data which will be passed to the rendered graph
 // this will be the output of the executive
-var frame_cnt = 0;
 r1.on('line', function(line) {
   sendUpdate(wss, line); 
   update_frames(frame_cnt);

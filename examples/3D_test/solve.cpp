@@ -10,7 +10,7 @@
 #define R_C 1.0 
 
 //const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
-const float A[2][2] = { {0.25, 4.0}, {4.0, 8.0}}; // interaction matrix
+const float A[2][2] = { {0.01, 4.0}, {4.0, 16.0}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){

@@ -21,20 +21,29 @@
 <script>
 
     var data    = [], min = max = 500;
-    var origin  = [860, 520], startAngle = Math.PI/8, beta = startAngle;
+    var origin  = [450, 520], startAngle = Math.PI/8, beta = startAngle;
     var svg     = d3.select('svg').call(d3.drag().on('drag', dragged).on('start', dragStart).on('end', dragEnd)).append('g');
     var color   = d3.scaleOrdinal(d3.schemeCategory10);
     var rn      = function(min, max){ return Math.round(d3.randomUniform(min, max+1)()); };
     var mx, mouseX;
     var filter_list = [ ]; // list of beads that we don't want shown
     var replay = false;
-    var update_cnt = 0;
+
+   // functions and variables for getting the current update count (for replaying and resuming experiments)
+   function getUpdateCnt(jsonfile) {
+       var request = new XMLHttpRequest();
+       request.open("GET", jsonfile, false);
+       request.send(null)
+       var JSON_object = JSON.parse(request.responseText);
+       return JSON_object.num_frames;
+   }
+   var update_cnt = getUpdateCnt('./expr.json');
 
    // functions that replays the simulation up until this point
  
    function replayFrames() {
     var framerate = parseInt(document.getElementById("replay_framerate").value);
-    var cur_replay = 0;
+    var cur_replay = 1;
     replay = true;
        let replayTimer = setTimeout(function showFrame(){
             var tmp = getNewData("frames/state_"+cur_replay+".json");
@@ -57,7 +66,7 @@
               replay = false;
             } 
 
-        }, 1/framerate);
+        }, 30);
    }
 
    // function used to filter a bead type
