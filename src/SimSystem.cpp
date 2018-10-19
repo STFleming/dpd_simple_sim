@@ -46,7 +46,7 @@ void SimSystem::emitJSON(std::string jsonfile) {
     std::ofstream out;
     out.open(jsonfile);
     out <<"{\n";
-    out << "  \"particles\":[\n";
+    out << "  \"beads\":[\n";
 
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
@@ -213,7 +213,7 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
             emit_cnt++;
 
             emitJSON("state.json"); // also replace the latest frame
-            printf("update\n"); // update command set via stdout to nodejs server
+            printf("u\n"); // update command set via stdout to nodejs server
             fflush(stdout);
             last_emit = clock();
         }
@@ -225,50 +225,6 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
     }
 }
 
-//void SimSystem::seq_run(uint32_t period, float emitrate) {
-//
-//    unsigned start_ts = _ts;
-//    clock_t last_emit = clock();
-//    while(_ts <= start_ts + period) { // run for period timesteps
-//
-//        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
-//            const float p_speed = 0.01;
-//            Particle *p = *i; 
-//            position_t cur_p = p->getPos();
-//            // add a bit to the position
-//            cur_p.x = cur_p.x + p_speed;
-//            if(cur_p.x >= _N)
-//                cur_p.x = cur_p.x - _N;
-//
-//            cur_p.y = cur_p.y + p_speed;
-//            if(cur_p.y >= _N)
-//                cur_p.y = cur_p.y - _N;
-//
-//            cur_p.z = cur_p.z + p_speed;
-//            if(cur_p.z >= _N)
-//                cur_p.z = cur_p.z - _N;
-//
-//            //update the particle with the new position
-//            p->setPos(cur_p);
-//
-//            if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-//                emitJSON("state.json");
-//                printf("update\n"); // update command set via stdout to nodejs server
-//                //printf("{\"id\":%d, \"x\":%.2f, \"y\":%.2f, \"z\":%.2f}\n",p->getID(), p->getPos().x, p->getPos().y, p->getPos().z); 
-//                fflush(stdout);
-//                last_emit = clock();
-//            }
-//
-//        } 
-// 
-//
-//        // update time
-//        _ts = _ts + 1;
-//        _t = _t + _dt;
-//    }
-//
-//}
-
 // adds a particle to the system
 void SimSystem::addParticle(Particle *p){
     // add the particle to the global particles list
@@ -278,7 +234,6 @@ void SimSystem::addParticle(Particle *p){
 }
 
 // populates the universe with particles from a JSON file
-// no longer needed?
 //void SimSystem::populateFromJSON(std::string jsonfile) {
 //    std::ifstream particle_file(jsonfile);
 //    Json::Value root;

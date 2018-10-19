@@ -1,7 +1,9 @@
 # Simple Dissipative Particle Dynamics (DPD) Simulator
 #### 0.0.1
 
-![3 particle example](dpd_example.gif)
+<p align="center">
+    <img src="dpd_example.gif"/>
+</p>
 
 This is a simple DPD simulator based on the description in chapter 8 of [this article](http://www.cse.scitech.ac.uk/ccg/software/DL_MESO/MANUAL/USRMAN.pdf). 
 It contains a C++ API for describing, beads (particles), the toroidal simulation universe, and the pairwise interaction forces between beads. It also has a javascript web-based interface (see above) that can be used to view the simulation in real-time, replay the simulation faster from the start, or to playback previous simulations.

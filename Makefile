@@ -4,7 +4,10 @@ OBJS = bin/SimSystem.o bin/SpatialUnit.o bin/Particle.o bin/utils.o bin/Vector3D
 
 .PHONY: all clean
 
-all: $(OBJS)
+all: $(OBJS) dpd-vis/node_modules
+
+dpd-vis/node_modules:
+	make -C dpd-vis
 
 bin/%.o: ./src/%.cpp ./inc/%.hpp
 	mkdir -p ./bin
@@ -13,3 +16,6 @@ bin/%.o: ./src/%.cpp ./inc/%.hpp
 clean:
 	rm -rf ./bin
 	rm -rf *.json
+	rm -rf dpd-vis/node_modules 
+	rm -rf dpd-vis/package-lock.json
+

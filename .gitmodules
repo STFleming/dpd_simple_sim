@@ -1,0 +1,4 @@
+[submodule "dpd-vis"]
+	path = dpd-vis
+	url = git@github.com:POETSII/dpd-vis.git
+	branch = master
