@@ -1,11 +1,29 @@
-# DPD simple sim
+# Simple Dissipative Particle Dynamics (DPD) Simulator
+#### 0.0.1
 
-A simple DPD simulator to help me get to grips with the application.
-It is all built in C++ and is multi-threaded.
+![3 particle example](dpd_example.gif)
 
-### requirements
+This is a simple DPD simulator based on the description in chapter 8 of [this article](http://www.cse.scitech.ac.uk/ccg/software/DL_MESO/MANUAL/USRMAN.pdf). 
+It contains a C++ API for describing, beads (particles), the toroidal simulation universe, and the pairwise interaction forces between beads. It also has a javascript web-based interface (see above) that can be used to view the simulation in real-time, replay the simulation faster from the start, or to playback previous simulations.
 
-`apt-get install libjsoncpp-dev`
-`apt-get install npm`
-`apt-get install nodejs`
+### examples
 
+To run one of the example in the `examples/` directory navigate to the appropriate directory and type:
+```bash
+make
+make launch_webserver
+```
+
+Then using a web-browser on your local machine navigate to `http://localhost:3000`, where you should see a live rendering of the particles (similar the the gif at the top of this page).
+
+### install requirements
+
+```bash
+apt-get install libjsoncpp-dev
+apt-get install npm
+apt-get install nodejs
+```
+
+### changelog
+
+* 0.0.1 - initial release
