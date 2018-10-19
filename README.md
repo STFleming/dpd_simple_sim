@@ -13,7 +13,7 @@ It contains a C++ API for describing, beads (particles), the toroidal simulation
 To run one of the example in the `examples/` directory navigate to the appropriate directory and type:
 ```bash
 make
-make launch_webserver
+make run 
 ```
 
 Then using a web-browser on your local machine navigate to `http://localhost:3000`, where you should see a live rendering of the particles (similar the the gif at the top of this page).
