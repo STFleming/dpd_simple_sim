@@ -53,7 +53,7 @@ void SimSystem::emitJSON(std::string jsonfile) {
         Particle *p = *i;
         // check to make sure the particle position makes sense
         if (!isnan(p->getPos().x()) && !isnan(p->getPos().y()) && !isnan(p->getPos().z())) {
-            out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<", \"type\":"<<p->getType()<<"}";
+            out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<", \"vx\":"<<p->getVelo().x()<<", \"vy\":"<<p->getVelo().y()<<", \"vz\":"<<p->getVelo().z()<<", \"type\":"<<p->getType()<<"}";
             if(p->getID() != (_particles->size()-1) )
                 out << ",\n";
             else
@@ -207,9 +207,9 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
 
         // do we want to emit the state of the simulation
         if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-            std::stringstream curframe;
-            curframe << "frames/state_" << emit_cnt << ".json"; 
-            emitJSON(curframe.str()); //emit the frame into the frames folder for later retrieval
+            //std::stringstream curframe;
+            //curframe << "frames/state_" << emit_cnt << ".json"; 
+            //emitJSON(curframe.str()); //emit the frame into the frames folder for later retrieval
             emit_cnt++;
 
             emitJSON("state.json"); // also replace the latest frame
