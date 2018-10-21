@@ -41,6 +41,16 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
     }
 }
 
+// bonds two particles in the universe together
+void SimSystem::bond(Particle *i, Particle *j, std::function<void(Particle *me, Particle *other)> bondf){
+    assert(!i->isBonded());
+    assert(!j->isBonded());
+    i->setBond(j, bondf);
+    j->setBond(i, bondf);
+    assert(i->getPos().toroidal_dist(j->getPos(), _N) < _r_c); 
+    return;
+}
+
 // emits the state of the system as a JSON file
 void SimSystem::emitJSON(std::string jsonfile) {
     std::ofstream out;
@@ -132,6 +142,12 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                             p1->callConservative(p2);
                             p1->callDrag(p2);
                             p1->callRandom(p2);
+
+                            Particle *bond = p1->getBondedParticle();
+                            if(bond == p2) { // these particles are bonded 
+                               p1->callBond();
+                            }  
+
                             std::tuple<Particle *, Particle*> part_pair = std::make_tuple(p1, p2);
                             _seq_pairs->push_back(part_pair);
                         } 

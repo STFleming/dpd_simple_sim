@@ -10,6 +10,11 @@ Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(P
    _force = Vector3D(0.0, 0.0, 0.0);
    _type = type;
 
+   // by default particles are not bonded to any other particle
+   _isBonded = false;
+   _bondParticle = NULL; // the particle that this could be bonded to
+   _bond = NULL; // the force function that is called between the bonds
+
    // assign the force functions
    _conservative = conservative;
    _drag = drag;
@@ -19,6 +24,19 @@ Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(P
 // destructor (destroys this particle)
 Particle::~Particle() {
 }
+
+// used to set particle bonds
+bool Particle::isBonded() { return _isBonded;}
+
+// used to set the particle this should be bonded to
+void Particle::setBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
+    _isBonded = true;
+    _bondParticle = p;
+    _bond = bondf;  
+}
+
+// returns the pointer to the particle that this is bonded to
+Particle * Particle::getBondedParticle(){ return _bondParticle; }
 
 // sets a new position for this particle
 void Particle::setPos(Vector3D npos) {
@@ -90,4 +108,11 @@ void Particle::callDrag(Particle *other) {
 // calls the random force function
 void Particle::callRandom(Particle *other) {
     _random(this, other);
+}
+
+// calls the bond force function
+void Particle::callBond() {
+    if(_isBonded){
+      _bond(this, getBondedParticle());
+    }
 }

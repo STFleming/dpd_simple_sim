@@ -29,6 +29,12 @@ class Particle {
         void callConservative(Particle *other); /**< calls the conservative force and applied it to this */
         void callDrag(Particle *other); /**< calls the drag force and applied to this */
         void callRandom(Particle *other); /**< calls the random force function applied to this */
+        void callBond(); /**< calls the force on the bonded particle */
+
+        // sets the bond force
+        void setBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf); /**< bonds this particle to another particle */
+        bool isBonded(); 
+        Particle * getBondedParticle(); /**< returns a pointer to the bonded particle */
 
     private:
         Vector3D _velocity; /**< the current velocity of the particle */
@@ -38,11 +44,14 @@ class Particle {
         uint32_t _id; /**< the unique ID for this particle */
         Vector3D _force; /**< the forces accumulated on this particle for this timestep */
         uint32_t _type; /**< identifier for the type of this particle (user configurable) */
+        bool _isBonded; /**< True if this particle is bonded to another particle */
+        Particle* _bondParticle; /**< the particle that this particle may or may not be bonded to */
 
         // Force functions
         std::function<void(Particle * me, Particle * other)> _conservative; /**< the pairwise conservative force function */ 
         std::function<void(Particle * me, Particle * other)> _drag; /**< the pairwise drag force function */
         std::function<void(Particle * me, Particle * other)> _random; /**< the pairwise random force function */
+        std::function<void(Particle *me, Particle *other)> _bond; /**< the pairwise bonded force (may or may not exist) */
 };
 
 

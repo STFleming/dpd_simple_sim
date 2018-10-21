@@ -15,6 +15,7 @@
 
 #include <iostream> // for emitting JSON files
 #include <fstream>
+#include <functional>
 #include <jsoncpp/json/value.h> // for parsing JSON files
 #include <jsoncpp/json/reader.h> // for parsing JSON files
 
@@ -47,6 +48,7 @@ class SimSystem {
         void addParticle(Particle *p); /**< Add a particle to the system */
         //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
+        void bond(Particle *i, Particle *j, std::function<void(Particle* me, Particle *other)> bondf); /**< Bonds particles i and j with bond function bondf */
 
         // exporting
         void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
