@@ -5,15 +5,14 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.01 
+#define DELTA_T 0.02 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
-#define W 0.75
-#define WW 0.5
-
 //const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
-const float A[3][3] = { {WW, W, W}, {W, 1.0, 0.05},  {W, 0.05, 0.01}}; // interaction matrix
+const float A[3][3] = { {25.0, 75.0, 35.0}, 
+                        {75.0, 25.0, 50.0},  
+                        {35.0, 50.0, 25.0}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -42,7 +41,7 @@ void conF(Particle *me, Particle *other){
 void dragF(Particle *me, Particle *other) {
     
     const float r_c = R_C; // the interaction cutoff
-    const float drag_coef = 0.998; // the drag coefficient (no idea what to set this at)
+    const float drag_coef = 4.5; // the drag coefficient (no idea what to set this at)
 
    // // position and distance
     Vector3D r_i = me->getPos();
@@ -70,8 +69,8 @@ void dragF(Particle *me, Particle *other) {
 // random pairwise force declaration
 void randF(Particle *me, Particle *other) {
 
-   const float K_BT = 0.05;
-   const float drag_coef = 0.998; // the drag coefficient (no idea what to set this at)
+   const float K_BT = 1.0;
+   const float drag_coef = 4.5; // the drag coefficient (no idea what to set this at)
    const float sigma_ij = sqrt(2*drag_coef*K_BT); // the temperature coef
    const float dt = DELTA_T; 
    const float r_c = R_C; // the interaction cutoff
@@ -99,8 +98,8 @@ void randF(Particle *me, Particle *other) {
 // this is a hookean harmonic bond 
 void bondF(Particle *me, Particle *other) {
 
-   const float K_div_2 = 16.0/2; // spring constant guess at a value 
-   const float r_o = 0.5; // the equilibrium bond length (guess)
+   const float K_div_2 = 128.0/2; // spring constant guess at a value 
+   const float r_o = 0.1; // the equilibrium bond length (guess)
 
    // variables for the current position
    Vector3D r_i = me->getPos();
@@ -114,14 +113,14 @@ void bondF(Particle *me, Particle *other) {
    float p_r_ij_dist = p_r_i.toroidal_dist(p_r_j, UNISIZE_D);
    Vector3D p_r_ij = p_r_i.toroidal_subtraction(p_r_j, UNISIZE_D, R_C);
 
-   float U_r_ij = K_div_2 * (r_ij_dist - r_o)*(r_ij_dist - r_o); 
-   float p_U_r_ij = K_div_2 * (p_r_ij_dist - r_o)*(p_r_ij_dist - r_o); 
+   float U_r_ij = K_div_2 * (r_ij_dist - (r_o/2))*(r_ij_dist - (r_o/2)); 
+   float p_U_r_ij = K_div_2 * (p_r_ij_dist - (r_o/2))*(p_r_ij_dist - (r_o/2)); 
 
    Vector3D b_force;
    if(r_ij_dist == p_r_ij_dist) {
       b_force.set(0.0,0.0,0.0);
    } else {
-      b_force = r_ij * (-1.0 * 1/r_ij_dist) * ((U_r_ij - p_U_r_ij)/(r_ij_dist - p_r_ij_dist));  
+      b_force = r_ij * (-1.0/r_ij_dist) * ((U_r_ij - p_U_r_ij)/(r_ij_dist - p_r_ij_dist));  
    }
 
    // update the force values
@@ -154,7 +153,7 @@ int main() {
    // Add the bonded particles
    for(unsigned i=0; i<20; i++) {
       Particle *p2 = new Particle(randPos(unisize), 1, mass_p1, conF, dragF, randF);
-      Particle *p3 = new Particle(p2->getPos() + 0.25, 2, mass_p2, conF, dragF, randF);
+      Particle *p3 = new Particle(p2->getPos() + 0.01, 2, mass_p2, conF, dragF, randF);
       universe.addParticle(p2);
       universe.addParticle(p3);
       universe.bond(p2, p3, bondF); 

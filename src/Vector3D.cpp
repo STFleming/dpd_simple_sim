@@ -200,3 +200,10 @@ float Vector3D::toroidal_dist(Vector3D a, float N) {
 
     return sqrt(dx*dx + dy*dy + dz*dz);
 }
+
+// returns a formatted string
+std::string Vector3D::str(){
+   std::stringstream ss;
+   ss << "<"<<x()<<", "<<y()<<", "<<z()<<">";
+   return ss.str();
+}

@@ -166,47 +166,26 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              // update velocity
              p->setVelo(p->getVelo() + delta_v); 
 
-             //if((p->getID() == 0) && (p->getForce().mag() != 0.0)) {
-             //}
-
-             //const float speedlimit = 1.0*0.95;
-             //if (p->getVelo().mag() >= speedlimit) {
-             //      printf("[particle:%u] Speed limit has been exceeded velocity: %.8f \n",  p->getID(), p->getVelo().mag());
-             //      Vector3D delta_r = p->getVelo()*_dt + acceleration*0.5*_dt*_dt;
-             //      printf("------------------\n"); // dump the stats for this particle            
-             //      printf("[particle:%u] force = %.8f\n", p->getID(), p->getForce().mag());
-             //      printf("[particle:%u] acceleration = %.8f\n", p->getID(), acceleration.mag());
-             //      printf("[particle:%u] delta_v = %.8f\n", p->getID(), delta_v.mag());
-             //      printf("[particle:%u] velocity = %.8f\n", p->getID(), p->getVelo().mag());
-             //      printf("[particle:%u] distance travlled = %.8f\n", p->getID(), delta_r.mag());
-             //      float scale = sqrt((speedlimit*speedlimit)/((delta_v.x()*delta_v.x())+(delta_v.y()*delta_v.y())+(delta_v.z()*delta_v.z())));
-             //      //delta_v.set(scale*delta_v.x(), scale*delta_v.y(), scale*delta_v.z());
-             //      //printf("  adjusted to delta_v: %.2f  using scale factor:%.2f\n", delta_v.mag(), scale);
-             //      exit(0);
-      
-             //}
-
              // euler update position & include wraparound
              //Vector3D point = p->getPos() +p->getVelo()*_dt;
 
              // velocity verlet
              Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
 
-
              // wraparound x direction
-             if(point.x() < 0.0)
+             if(point.x() <= 0.0)
                   point.x(point.x() + _N); 
              if(point.x() >= _N)
                   point.x(point.x() - _N); 
 
              // wrapointaround y direction
-             if(point.y() < 0.0)
+             if(point.y() <= 0.0)
                   point.y(point.y() + _N); 
              if(point.y() >= _N)
                   point.y(point.y() - _N); 
 
              // wrapointaround z direction
-             if(point.z() < 0.0)
+             if(point.z() <= 0.0)
                   point.z(point.z() + _N); 
              if(point.z() >= _N)
                   point.z(point.z() - _N); 
@@ -216,6 +195,22 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
 
              // clear force 
              p->setForce(Vector3D(0.0, 0.0, 0.0));
+
+             // sanity assertion check for bonded particles
+             if(p->isBonded()) {
+                if(p->getPos().toroidal_dist(p->getBondedParticle()->getPos(), _N) > _r_c){
+                     Particle *i = p;
+                     Particle *j = p->getBondedParticle();
+                     std::cerr << "Error! bonded beads: "<< i->getID()<<" <-> "<< j->getID()<<"  have a broken bond\n";
+                     std::cerr << "Pos of Bead: "<<i->getID() << " is "<< i->getPos().str() <<"\n"; 
+                     std::cerr << "Pos of Bead: "<<j->getID() << " is "<< j->getPos().str() <<"\n"; 
+                     std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
+                     std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
+                     std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 
+                     exit(EXIT_FAILURE);
+                }
+             }             
+
         } 
 
         // cleanup: 

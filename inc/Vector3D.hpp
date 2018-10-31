@@ -3,6 +3,8 @@
 #define __VECTOR_3D_H
 
 #include <math.h>
+#include <sstream>
+#include <string>
 //#include <cmath.h>
 
 class Vector3D {
@@ -51,6 +53,9 @@ class Vector3D {
        // distance
        float dist(Vector3D a); /**< calculates the euclidean distance */
        float toroidal_dist(Vector3D a, float N); /**< calculates the euclidean distance */
+ 
+       // format string
+       std::string str();
 
    private:
        float _x;
