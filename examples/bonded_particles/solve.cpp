@@ -9,10 +9,7 @@
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
-//const float A[2][2] = { {0.0, 0.0}, {0.0, 0.0}}; // interaction matrix
-const float A[3][3] = { {25.0, 75.0, 35.0}, 
-                        {75.0, 25.0, 50.0},  
-                        {35.0, 50.0, 25.0}}; // interaction matrix
+const float A[2][2] = { {25.0, 25.0}, {25.0, 25.0}}; // interaction matrix
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -99,7 +96,7 @@ void randF(Particle *me, Particle *other) {
 void bondF(Particle *me, Particle *other) {
 
    const float K_div_2 = 128.0/2; // spring constant guess at a value 
-   const float r_o = 0.1; // the equilibrium bond length (guess)
+   const float r_o = 0.5; // the equilibrium bond length 
 
    // variables for the current position
    Vector3D r_i = me->getPos();
@@ -113,8 +110,8 @@ void bondF(Particle *me, Particle *other) {
    float p_r_ij_dist = p_r_i.toroidal_dist(p_r_j, UNISIZE_D);
    Vector3D p_r_ij = p_r_i.toroidal_subtraction(p_r_j, UNISIZE_D, R_C);
 
-   float U_r_ij = K_div_2 * (r_ij_dist - (r_o/2))*(r_ij_dist - (r_o/2)); 
-   float p_U_r_ij = K_div_2 * (p_r_ij_dist - (r_o/2))*(p_r_ij_dist - (r_o/2)); 
+   float U_r_ij = K_div_2 * (r_ij_dist - r_o)*(r_ij_dist - r_o); 
+   float p_U_r_ij = K_div_2 * (p_r_ij_dist - r_o)*(p_r_ij_dist - r_o); 
 
    Vector3D b_force;
    if(r_ij_dist == p_r_ij_dist) {
@@ -137,28 +134,62 @@ int main() {
    // number of particles (beads) in the universe
    const unsigned n = 1000;
 
+   // the number of polymers 
+   const unsigned nP = 1; 
+   // pLen the length of the polymer 
+   const unsigned pLen = 10;
+
    // mass of the particles
-   const float mass_p0 = 1.0;
-   const float mass_p1 = 1.0;
-   const float mass_p2 = 1.0;
+   const float mass_w = 1.0;
+   const float mass_p = 1.0;
 
    SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
    
    // Add lots of water
-   for(unsigned i=0; i<(n-40); i++) {
-       Particle *p1 = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
+   for(unsigned i=0; i<(n-(pLen*nP)); i++) {
+       Particle *w = new Particle(randPos(unisize), 0, mass_w, conF, dragF, randF);
+       universe.addParticle(w);
+   }
+
+ 
+   for(unsigned i=0; i<nP; i++) { 
+       Vector3D offset(0.0,0.0,0.5);
+       // create a polymer
+       Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
+       Particle * p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       //Particle * p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       //Particle * p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       //Particle * p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       //Particle * p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       //Particle * p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+
+       // add the polymer particles to the universe
+       universe.addParticle(p0);
        universe.addParticle(p1);
-   }
+       universe.addParticle(p2);
+       universe.addParticle(p3);
+       universe.addParticle(p4);
+       //universe.addParticle(p5);
+       //universe.addParticle(p6);
+       //universe.addParticle(p7);
+       //universe.addParticle(p8);
+       //universe.addParticle(p9);
 
-   // Add the bonded particles
-   for(unsigned i=0; i<20; i++) {
-      Particle *p2 = new Particle(randPos(unisize), 1, mass_p1, conF, dragF, randF);
-      Particle *p3 = new Particle(p2->getPos() + 0.01, 2, mass_p2, conF, dragF, randF);
-      universe.addParticle(p2);
-      universe.addParticle(p3);
-      universe.bond(p2, p3, bondF); 
-   }
-
+       // bond the polymer particles together using the function bondF
+       universe.bond(p0, p1, bondF); 
+       universe.bond(p1, p2, bondF); 
+       universe.bond(p2, p3, bondF); 
+       universe.bond(p3, p4, bondF); 
+       //universe.bond(p4, p5, bondF); 
+       //universe.bond(p5, p6, bondF); 
+       //universe.bond(p6, p7, bondF); 
+       //universe.bond(p7, p8, bondF); 
+       //universe.bond(p8, p9, bondF); 
+   } 
+   
    // emit the initial state (read by the web renderer interface)
    universe.emitJSON("state.json");
 

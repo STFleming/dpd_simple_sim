@@ -41,13 +41,14 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
     }
 }
 
-// bonds two particles in the universe together
+// bonds particle i to particle j in the universe 
 void SimSystem::bond(Particle *i, Particle *j, std::function<void(Particle *me, Particle *other)> bondf){
     assert(!i->isBonded());
-    assert(!j->isBonded());
     i->setBond(j, bondf);
-    j->setBond(i, bondf);
-    assert(i->getPos().toroidal_dist(j->getPos(), _N) < _r_c); 
+    if(i->getPos().toroidal_dist(j->getPos(), _N) >= _r_c){
+         printf("Error: particle %d (%s) and %d (%s) are too far away (dist=%.2f) to be bonded\n", i->getID(), i->getPos().str().c_str(), j->getID(), j->getPos().str().c_str(), i->getPos().toroidal_dist(j->getPos(), _N));
+         exit(EXIT_FAILURE);
+    } 
     return;
 }
 
@@ -143,8 +144,9 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                             p1->callDrag(p2);
                             p1->callRandom(p2);
 
-                            Particle *bond = p1->getBondedParticle();
-                            if(bond == p2) { // these particles are bonded 
+                            Particle *bond1 = p1->getBondedParticle();
+                            Particle *bond2 = p2->getBondedParticle();
+                            if( (bond1 == p2) || (bond2 == p1) ) { // these particles are bonded 
                                p1->callBond();
                             }  
 
@@ -204,6 +206,8 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                      std::cerr << "Error! bonded beads: "<< i->getID()<<" <-> "<< j->getID()<<"  have a broken bond\n";
                      std::cerr << "Pos of Bead: "<<i->getID() << " is "<< i->getPos().str() <<"\n"; 
                      std::cerr << "Pos of Bead: "<<j->getID() << " is "<< j->getPos().str() <<"\n"; 
+                     std::cerr << "Previous pos of Bead: "<<i->getID() << " is "<< i->getPrevPos().str() <<"\n"; 
+                     std::cerr << "Previous pos of Bead: "<<j->getID() << " is "<< j->getPrevPos().str() <<"\n"; 
                      std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
                      std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
                      std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 

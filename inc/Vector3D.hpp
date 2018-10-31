@@ -50,6 +50,9 @@ class Vector3D {
        // magnitude
        float mag(); /**< calculates the magnitude of this vector */
    
+       // modulo add
+       Vector3D modulo_add(Vector3D a, float N);
+
        // distance
        float dist(Vector3D a); /**< calculates the euclidean distance */
        float toroidal_dist(Vector3D a, float N); /**< calculates the euclidean distance */
