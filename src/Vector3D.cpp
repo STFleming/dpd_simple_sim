@@ -215,15 +215,15 @@ float Vector3D::toroidal_dist(Vector3D a, float N) {
     float dy = fabs(a.y() - _y);
     float dz = fabs(a.z() - _z);
 
-    if(dx >= (N/2)) {
+    if(dx > (N/2)) {
         dx = N - dx; 
     }  
 
-    if(dy >= (N/2)) {
+    if(dy > (N/2)) {
         dy = N - dy; 
     }  
 
-    if(dz >= (N/2)) {
+    if(dz > (N/2)) {
         dz = N - dz; 
     }  
 

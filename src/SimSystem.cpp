@@ -175,19 +175,19 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
 
              // wraparound x direction
-             if(point.x() <= 0.0)
+             if(point.x() < 0.0)
                   point.x(point.x() + _N); 
              if(point.x() >= _N)
                   point.x(point.x() - _N); 
 
              // wrapointaround y direction
-             if(point.y() <= 0.0)
+             if(point.y() < 0.0)
                   point.y(point.y() + _N); 
              if(point.y() >= _N)
                   point.y(point.y() - _N); 
 
              // wrapointaround z direction
-             if(point.z() <= 0.0)
+             if(point.z() < 0.0)
                   point.z(point.z() + _N); 
              if(point.z() >= _N)
                   point.z(point.z() - _N); 
@@ -195,8 +195,6 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
              // update the position
              p->setPos(point); 
 
-             // clear force 
-             p->setForce(Vector3D(0.0, 0.0, 0.0));
 
              // sanity assertion check for bonded particles
              if(p->isBonded()) {
@@ -211,11 +209,16 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
                      std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
                      std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
                      std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 
+                     std::cerr << "Force of beads: Bead = "<<i->getID()<< " (Force = " << i->getForce().str() << ")   Bead = "<< j->getID() <<" (Force = " << j->getForce().str() <<")\n";
                      exit(EXIT_FAILURE);
                 }
              }             
 
+            // clear force 
+            p->setForce(Vector3D(0.0, 0.0, 0.0));
+
         } 
+
 
         // cleanup: 
         _seq_pairs->clear(); // we no longer need to track the pairs

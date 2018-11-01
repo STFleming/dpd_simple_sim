@@ -155,16 +155,17 @@ int main() {
    for(unsigned i=0; i<nP; i++) { 
        Vector3D offset(0.0,0.0,0.5);
        // create a polymer
-       Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
+       //Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
+       Particle * p0 = new Particle(Vector3D(unisize/2,unisize/2,unisize/2), 1, mass_p, conF, dragF, randF);
        Particle * p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
        Particle * p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
        Particle * p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
        Particle * p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       //Particle * p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       //Particle * p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       //Particle * p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       //Particle * p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       //Particle * p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
 
        // add the polymer particles to the universe
        universe.addParticle(p0);
@@ -172,22 +173,22 @@ int main() {
        universe.addParticle(p2);
        universe.addParticle(p3);
        universe.addParticle(p4);
-       //universe.addParticle(p5);
-       //universe.addParticle(p6);
-       //universe.addParticle(p7);
-       //universe.addParticle(p8);
-       //universe.addParticle(p9);
+       universe.addParticle(p5);
+       universe.addParticle(p6);
+       universe.addParticle(p7);
+       universe.addParticle(p8);
+       universe.addParticle(p9);
 
        // bond the polymer particles together using the function bondF
        universe.bond(p0, p1, bondF); 
        universe.bond(p1, p2, bondF); 
        universe.bond(p2, p3, bondF); 
        universe.bond(p3, p4, bondF); 
-       //universe.bond(p4, p5, bondF); 
-       //universe.bond(p5, p6, bondF); 
-       //universe.bond(p6, p7, bondF); 
-       //universe.bond(p7, p8, bondF); 
-       //universe.bond(p8, p9, bondF); 
+       universe.bond(p4, p5, bondF); 
+       universe.bond(p5, p6, bondF); 
+       universe.bond(p6, p7, bondF); 
+       universe.bond(p7, p8, bondF); 
+       universe.bond(p8, p9, bondF); 
    } 
    
    // emit the initial state (read by the web renderer interface)
