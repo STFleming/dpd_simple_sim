@@ -23,10 +23,12 @@ class SpatialUnit {
         position_t getPos(); /**< returns the position for this cube */
         float getSize(); /**< returns the size of this cube */
         void addParticle(Particle* p); /**< Adds a particle to this spatial unit at (global) position p */ 
+        void addLocalParticle(Particle *p); /**< Adds a particle to this spatial unit at (local) position p */
         bool removeParticle(Particle *p); /**< Removes a particle from this SpatialUnit */
         unsigned numBeads(); /**< returns the number of beads for this spatial unit */
         bool checkPos(position_t p); /**< returns True if this position is within this spatial unit */
         void addNeighbour(SpatialUnit *s); /**< Adds a neighbour to this spatial unit */
+        unsigned numNeighbours(); /**, returns the number of neighbours this spatial unit has */
         spatial_unit_address_t getAddr(); /**< returns the address for this spatial unit */
 
         // particle iterators

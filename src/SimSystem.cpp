@@ -43,6 +43,167 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
     }
 
     // construct the neighbours list for each SpatialUnit
+    // not worrying too much about efficiency for the time being for this
+    for(unsigned x=0; x<_D; x++) {
+        for(unsigned y=0; y<_D; y++) {
+            for(unsigned z=0; z<_D; z++) {
+                  
+                // calculate offsets
+                int x_neg, y_neg, z_neg; 
+                int x_pos, y_pos, z_pos;
+                
+                // assign the x offsets
+                if(x==0) {
+                  x_neg = _D-1; 
+                  x_pos = x+1;
+                } else if (x == (_D-1)) {
+                  x_neg = x-1;
+                  x_pos = 0; 
+                } else {
+                  x_neg = x-1;
+                  x_pos = x+1;
+                }
+
+                // assign the y offsets
+                if(y==0) {
+                  y_neg = _D-1; 
+                  y_pos = y+1;
+                } else if (y == (_D-1)) {
+                  y_neg = y-1;
+                  y_pos = 0; 
+                } else {
+                  y_neg = y-1;
+                  y_pos = y+1;
+                }
+
+                // assign the z offsets
+                if(z==0) {
+                  z_neg = _D-1; 
+                  z_pos = z+1;
+                } else if (z == (_D-1)) {
+                  z_neg = z-1;
+                  z_pos = 0; 
+                } else {
+                  z_neg = z-1;
+                  z_pos = z+1;
+                }
+
+
+                 // x ,y ,z
+                 spatial_unit_address_t curr = {x, y, z};
+                 SpatialUnit *curr_spu = getSpatialUnit(curr); 
+                 // add all 27 neighbours to the neighbours list
+                 // z = -1
+                   // { -1,-1,-1 },  { -1,0,-1 },  { -1, +1,-1 }
+                      curr.x = x_neg; curr.y = y_neg; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y_pos; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { 0,-1, -1 },  { 0, 0,-1 },  { 0, +1, -1 }
+                      curr.x = x; curr.y = y_neg; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x; curr.y = y; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x; curr.y = y_pos; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { +1,-1,-1 },  { +1,0,-1 },  { +1, +1,-1 }
+                      curr.x = x_pos; curr.y = y_neg; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y_pos; curr.z = z_neg;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                 // z = 0
+                   // { -1,-1,0 },  { -1,0,0 },  { -1, +1,0 }
+                      curr.x = x_neg; curr.y = y_neg; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y_pos; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { 0,-1, 0 },  { 0, 0, 0 },  { 0, +1, 0 }
+                      curr.x = x; curr.y = y_neg; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      // skipping! one is not a neighbour of oneself
+                      //curr.x = x; curr.y = y; curr.z = z;
+                      //curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x; curr.y = y_pos; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { +1,-1, 0 },  { +1,0, 0 },  { +1, +1, 0 }
+                      curr.x = x_pos; curr.y = y_neg; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y_pos; curr.z = z;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+
+                 // z = +1
+                   // { -1,-1,+1 },  { -1,0,+1},  { -1, +1,+1 }
+                      curr.x = x_neg; curr.y = y_neg; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_neg; curr.y = y_pos; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { 0,-1, +1 },  { 0, 0, +1 },  { 0, +1, +1 }
+                      curr.x = x; curr.y = y_neg; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x; curr.y = y; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x; curr.y = y_pos; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                   // { +1,-1, +1 },  { +1,0, +1 },  { +1, +1, +1 }
+                      curr.x = x_pos; curr.y = y_neg; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+                      curr.x = x_pos; curr.y = y_pos; curr.z = z_pos;
+                      curr_spu->addNeighbour(getSpatialUnit(curr)); 
+
+            }
+        }
+    }
+
+}
+
+// returns a spatial unit when provided with a spatial unti address
+SpatialUnit * SimSystem::getSpatialUnit(spatial_unit_address_t x) {
+    for(SimSystem::iterator i=begin(); i!=end(); ++i){
+        SpatialUnit *c = *i;
+        spatial_unit_address_t c_addr = c->getAddr();
+        if( (x.x == c_addr.x) && (x.y == c_addr.y) && (x.z == c_addr.z)) {
+           return c;
+        } 
+    }
+    return NULL;
 }
 
 // bonds particle i to particle j in the universe 

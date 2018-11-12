@@ -38,6 +38,8 @@ class SimSystem {
         p_iterator p_begin(); /**< returns the start of the global particle list */
         p_iterator p_end(); /**< returns the start of the global particle list */
 
+        SpatialUnit * getSpatialUnit(spatial_unit_address_t x); /**< given a spatial unit address finds that spatial unit */
+
         typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
 
         // simulation management

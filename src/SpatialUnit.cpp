@@ -40,8 +40,15 @@ spatial_unit_address_t SpatialUnit::getAddr() { return _addr; }
 
 /**! adds a neighbour to the neighbour list*/
 void SpatialUnit::addNeighbour(SpatialUnit *s){
+    if(s==NULL) {
+         printf("ERROR: trying to assign a NULL as a neighbour to a spatial unit!\n");
+         exit(EXIT_FAILURE);
+    }
     _neighbours->push_back(s); // it is the responsibility of the universe to make sure the neighbour makes sense
 }
+
+/**! returns the number of neighbours this spatial unit has */
+unsigned SpatialUnit::numNeighbours(){ return _neighbours->size(); }
 
 /**! add a particle to this spatial unit at position p */
 void SpatialUnit::addParticle(Particle* p) {
@@ -53,6 +60,31 @@ void SpatialUnit::addParticle(Particle* p) {
    } else {
      std::runtime_error("Error: this particle cannot fit in within this cube!\n"); 
    } 
+}
+
+/**! adds a local particle to a spatial unit */
+void SpatialUnit::addLocalParticle(Particle *p){
+     // check to make sure the position is local  
+     Vector3D p_pos = p->getPos();
+
+     if( ( p_pos.x() < 0 ) || (p_pos.x() >= _size) ){
+         printf("Error: the x dimension for this particle is not local\n");
+         fflush(stdout);
+         exit(EXIT_FAILURE);
+     }  
+    
+     if( ( p_pos.y() < 0 ) || (p_pos.y() >= _size) ){
+         printf("Error: the y dimension for this particle is not local\n");
+         fflush(stdout);
+         exit(EXIT_FAILURE);
+     }  
+     
+     if( ( p_pos.z() < 0 ) || (p_pos.z() >= _size) ){
+         printf("Error: the z dimension for this particle is not local\n");
+         fflush(stdout);
+         exit(EXIT_FAILURE);
+     }  
+     _particles->push_back(p);
 }
 
 /**! removes a particle from this spatial unit 
