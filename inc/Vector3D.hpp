@@ -53,6 +53,9 @@ class Vector3D {
        // modulo add
        Vector3D modulo_add(Vector3D a, float N);
 
+       // direction mask
+       Vector3D direction_mask(Vector3D a, float N, float r_c); /**< used to indicate which parts of a vector are crossing a toroidal boundary */
+
        // distance
        float dist(Vector3D a); /**< calculates the euclidean distance */
        float toroidal_dist(Vector3D a, float N); /**< calculates the euclidean distance */

@@ -28,9 +28,13 @@ void conF(Particle *me, Particle *other){
 
     assert(r_ij_dist <= R_C);
 
+    // direction mask
+    Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
+
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force*-1.0); 
+    me->setForce( me->getForce() + mask*force); 
+    other->setForce( other->getForce() + mask*force*-1.0); 
+
     return;
 }
 
@@ -57,9 +61,13 @@ void dragF(Particle *me, Particle *other) {
      
     Vector3D force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (-1.0 * drag_coef); 
 
+    // direction mask
+    Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
+
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force*-1.0); 
+    me->setForce( me->getForce() + mask*force); 
+    other->setForce( other->getForce() + mask*force*-1.0); 
+
     return;
 }
 
@@ -86,9 +94,13 @@ void randF(Particle *me, Particle *other) {
    float r = (rand() / (float)RAND_MAX * 1.0);
    Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
 
+   // direction mask
+   Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
+
    // update the forces acting on the two particles
-   me->setForce( me->getForce() + force); 
-   other->setForce( other->getForce() + force*-1.0); 
+   me->setForce( me->getForce() + mask*force); 
+   other->setForce( other->getForce() + mask*force*-1.0); 
+
    return;
 }
 
@@ -120,9 +132,12 @@ void bondF(Particle *me, Particle *other) {
       b_force = r_ij * (-1.0/r_ij_dist) * ((U_r_ij - p_U_r_ij)/(r_ij_dist - p_r_ij_dist));  
    }
 
+   // mask for adjusting force values when crossing toroidal boundaries
+   Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
+
    // update the force values
-   me->setForce( me->getForce() + b_force);
-   other->setForce( other->getForce() + b_force*-1.0); 
+   me->setForce( me->getForce() + mask*b_force);
+   other->setForce( other->getForce() + mask*b_force*-1.0); 
 }
 
 
@@ -148,6 +163,7 @@ int main() {
    // Add lots of water
    for(unsigned i=0; i<(n-(pLen*nP)); i++) {
        Particle *w = new Particle(randPos(unisize), 0, mass_w, conF, dragF, randF);
+       //Particle *w = new Particle(rand2DPos(unisize), 0, mass_w, conF, dragF, randF);
        universe.addParticle(w);
    }
 
@@ -155,8 +171,10 @@ int main() {
    for(unsigned i=0; i<nP; i++) { 
        Vector3D offset(0.0,0.0,0.5);
        // create a polymer
-       //Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
-       Particle * p0 = new Particle(Vector3D(unisize/2,unisize/2,unisize/2), 1, mass_p, conF, dragF, randF);
+       //Particle * p0 = new Particle(randPos(unisize/4), 1, mass_p, conF, dragF, randF);
+       //Particle * p0 = new Particle(Vector3D(0.1,0.1,0.1), 1, mass_p, conF, dragF, randF);
+       //Particle * p0 = new Particle(rand2DPos(unisize), 1, mass_p, conF, dragF, randF);
+       Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
        Particle * p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
        Particle * p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
        Particle * p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);

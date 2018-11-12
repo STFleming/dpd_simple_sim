@@ -166,21 +166,21 @@ Vector3D Vector3D::toroidal_subtraction(Vector3D a, float N, float R_C) {
   //   diff_z = N + diff_z;
   //} 
 
-  if(diff_x > R_C) {
+  if(diff_x >= R_C) {
      diff_x = N - diff_x;
-  } else if (diff_x < -1.0*R_C) {
+  } else if (diff_x <= -1.0*R_C) {
      diff_x = N + diff_x;
   }
 
-  if(diff_y > R_C) {
+  if(diff_y >= R_C) {
     diff_y = N - diff_y;
-  } else if (diff_y < -1.0*R_C) {
+  } else if (diff_y <= -1.0*R_C) {
     diff_y = N + diff_y;
   }
 
-  if(diff_z > R_C) {
+  if(diff_z >= R_C) {
     diff_z = N - diff_z;
-  } else if (diff_z < -1.0*R_C) {
+  } else if (diff_z <= -1.0*R_C) {
     diff_z = N + diff_z;
   }
  
@@ -208,6 +208,34 @@ float Vector3D::dist(Vector3D a) {
    return c.mag();
 }
 
+// returns a direction mask (1 or -1) per dimension for whether or not it is crossing
+// a boundary.
+// this is because the force needs to move in the opposite direction across a boundary
+// It only really became noticeable for the bond force because they are so large 
+Vector3D Vector3D::direction_mask(Vector3D a, float N, float r_c) {
+    Vector3D mask;
+    float diff_x = fabs(a.x() - _x); 
+    float diff_y = fabs(a.y() - _y); 
+    float diff_z = fabs(a.z() - _z); 
+
+    if(diff_x >= N/2) 
+       mask.x(-1.0);    
+    else
+       mask.x(1.0);
+
+    if(diff_y >= N/2)
+       mask.y(-1.0);
+    else
+       mask.y(1.0);
+
+    if(diff_z >= N/2)
+       mask.z(-1.0);
+    else
+       mask.z(1.0);
+
+    return mask;
+}
+
 // calculate the toroidal distance
 float Vector3D::toroidal_dist(Vector3D a, float N) {
 
@@ -215,15 +243,15 @@ float Vector3D::toroidal_dist(Vector3D a, float N) {
     float dy = fabs(a.y() - _y);
     float dz = fabs(a.z() - _z);
 
-    if(dx > (N/2)) {
+    if(dx >= (N/2)) {
         dx = N - dx; 
     }  
 
-    if(dy > (N/2)) {
+    if(dy >= (N/2)) {
         dy = N - dy; 
     }  
 
-    if(dz > (N/2)) {
+    if(dz >= (N/2)) {
         dz = N - dz; 
     }  
 

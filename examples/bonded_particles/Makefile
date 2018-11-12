@@ -11,7 +11,7 @@ run: solve
 	./solve | nodejs $(LEVEL)/dpd-vis/visualiser.js
 
 replay: webserver
-	nodejs main
+	nodejs $(LEVEL)/dpd-vis/visualiser.js 
 
 solve: $(OBJS) solve.cpp
 	g++ -std=c++11 -O2 -I $(LEVEL)/inc solve.cpp -o solve $(LEVEL)/bin/*.o -ljsoncpp

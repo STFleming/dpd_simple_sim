@@ -1,15 +1,18 @@
 #include "SpatialUnit.hpp"
 
 /**! Constructor: creates a problem of NxNxN cubes */
-SpatialUnit::SpatialUnit(float size, float x, float y, float z, unsigned verbosity) {
+SpatialUnit::SpatialUnit(float size, float x, float y, float z, spatial_unit_address_t addr, unsigned verbosity) {
     _size = size;
     _pos.x = x;
     _pos.y = y;
     _pos.z = z;
     _verbosity = verbosity;
+    _addr = addr;
     
     // create the heap vector of particles
     _particles = new std::vector<Particle *>();
+    // create the heap vector of neighbours
+    _neighbours = new std::vector<SpatialUnit *>();
 }
 
 /**! Destructor: cleans up the particles */
@@ -32,6 +35,14 @@ bool SpatialUnit::checkPos(position_t p) {
     return true;
 } 
 
+/**! returns the address for this spatial unit */
+spatial_unit_address_t SpatialUnit::getAddr() { return _addr; }
+
+/**! adds a neighbour to the neighbour list*/
+void SpatialUnit::addNeighbour(SpatialUnit *s){
+    _neighbours->push_back(s); // it is the responsibility of the universe to make sure the neighbour makes sense
+}
+
 /**! add a particle to this spatial unit at position p */
 void SpatialUnit::addParticle(Particle* p) {
    // first check to make sure that we can actually add a particle
@@ -42,6 +53,26 @@ void SpatialUnit::addParticle(Particle* p) {
    } else {
      std::runtime_error("Error: this particle cannot fit in within this cube!\n"); 
    } 
+}
+
+/**! removes a particle from this spatial unit 
+     returns true if the removal was successful
+*/
+bool SpatialUnit::removeParticle(Particle *p){
+  for(SpatialUnit::iterator i=begin(); i!=end(); ++i){
+      Particle *curr = *i;
+      if(p->getID() == curr->getID()){
+          // we've found our particle
+          _particles->erase(i);
+          return true;
+      } 
+  } 
+  return false;
+}
+
+/**! returns the number of beads within this spatial unit */
+unsigned SpatialUnit::numBeads() {
+    return _particles->size();
 }
 
 /**! returns the position of this cube */
@@ -57,3 +88,7 @@ float SpatialUnit::getSize() {
 /**! iterators for the start and end of the particle vector */
 SpatialUnit::iterator SpatialUnit::begin(){ return _particles->begin(); }
 SpatialUnit::iterator SpatialUnit::end(){ return _particles->end(); }
+
+/**! iterators for the start and end of the neighbours vector */
+SpatialUnit::n_iterator SpatialUnit::n_begin(){ return _neighbours->begin(); }
+SpatialUnit::n_iterator SpatialUnit::n_end(){ return _neighbours->end(); }

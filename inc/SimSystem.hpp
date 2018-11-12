@@ -52,6 +52,9 @@ class SimSystem {
 
         // exporting
         void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
+        // debug & testing
+        // print the number of particles per spatial unit
+        void printSpatialAllocation();
 
     private:
         float _t; /**< the current simulation time */

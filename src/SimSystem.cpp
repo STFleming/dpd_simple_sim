@@ -25,9 +25,9 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
 
     // create the list of _cubes
     _cubes = new std::vector<SpatialUnit *>(); 
-    for(int x=0; x<_D; x++) {
-        for(int y=0; y<_D; y++) {
-            for(int z=0; z<_D; z++) {
+    for(unsigned x=0; x<_D; x++) {
+        for(unsigned y=0; y<_D; y++) {
+            for(unsigned z=0; z<_D; z++) {
                 float fpx = (float)x * _unit_size;
                 float fpy = (float)y * _unit_size;
                 float fpz = (float)z * _unit_size;
@@ -35,10 +35,14 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
                 // create a SpatialUnit and add it to the cubes
                 if(_verbosity >= 3)
                     printf("Constructing a cube (size=%f) at x:%f, y:%f, z:%f\n", _unit_size, fpx, fpy, fpz);
-                    _cubes->push_back(new SpatialUnit(_unit_size,fpx,fpy,fpz,_verbosity)); // Add a new cube of size _N/_D at x,y,z
+
+                spatial_unit_address_t c_addr = {x,y,z};
+                _cubes->push_back(new SpatialUnit(_unit_size,fpx,fpy,fpz,c_addr, _verbosity)); // Add a new cube of size _N/_D at x,y,z
             }
         }
     }
+
+    // construct the neighbours list for each SpatialUnit
 }
 
 // bonds particle i to particle j in the universe 
@@ -109,6 +113,24 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
     }    
     std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
 }
+
+//! prints the number of particles allocated per spatial unit
+void SimSystem::printSpatialAllocation() {
+   for(SimSystem::iterator i=begin(), e=end(); i!=e; ++i){
+       SpatialUnit *cur = *i;
+       position_t pos =  cur->getPos();
+       std::cout << "Number of particles for this spatial unit ("<<pos.x << "," <<pos.y<<","<<pos.z<<"): " << cur->numBeads() << "\n"; 
+   }
+}
+
+// runs the simulation for a given period uses the SpatialUnits and passing beads between them to simulate the MPI
+// based approach
+void SimSystem::run(uint32_t period) {
+
+ printf("Running the sim...\n"); 
+
+}
+
 
 // runs the simulation for a given number of timesteps sequentially there is no parallelism here
 // emits the state of each particle given by the emitrate
@@ -197,22 +219,22 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
 
 
              // sanity assertion check for bonded particles
-             if(p->isBonded()) {
-                if(p->getPos().toroidal_dist(p->getBondedParticle()->getPos(), _N) > _r_c){
-                     Particle *i = p;
-                     Particle *j = p->getBondedParticle();
-                     std::cerr << "Error! bonded beads: "<< i->getID()<<" <-> "<< j->getID()<<"  have a broken bond\n";
-                     std::cerr << "Pos of Bead: "<<i->getID() << " is "<< i->getPos().str() <<"\n"; 
-                     std::cerr << "Pos of Bead: "<<j->getID() << " is "<< j->getPos().str() <<"\n"; 
-                     std::cerr << "Previous pos of Bead: "<<i->getID() << " is "<< i->getPrevPos().str() <<"\n"; 
-                     std::cerr << "Previous pos of Bead: "<<j->getID() << " is "<< j->getPrevPos().str() <<"\n"; 
-                     std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
-                     std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
-                     std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 
-                     std::cerr << "Force of beads: Bead = "<<i->getID()<< " (Force = " << i->getForce().str() << ")   Bead = "<< j->getID() <<" (Force = " << j->getForce().str() <<")\n";
-                     exit(EXIT_FAILURE);
-                }
-             }             
+             //if(p->isBonded()) {
+             //   if(p->getPos().toroidal_dist(p->getBondedParticle()->getPos(), _N) > _r_c){
+             //        Particle *i = p;
+             //        Particle *j = p->getBondedParticle();
+             //        std::cerr << "Error! bonded beads: "<< i->getID()<<" <-> "<< j->getID()<<"  have a broken bond\n";
+             //        std::cerr << "Pos of Bead: "<<i->getID() << " is "<< i->getPos().str() <<"\n"; 
+             //        std::cerr << "Pos of Bead: "<<j->getID() << " is "<< j->getPos().str() <<"\n"; 
+             //        std::cerr << "Previous pos of Bead: "<<i->getID() << " is "<< i->getPrevPos().str() <<"\n"; 
+             //        std::cerr << "Previous pos of Bead: "<<j->getID() << " is "<< j->getPrevPos().str() <<"\n"; 
+             //        std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
+             //        std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
+             //        std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 
+             //        std::cerr << "Force of beads: Bead = "<<i->getID()<< " (Force = " << i->getForce().str() << ")   Bead = "<< j->getID() <<" (Force = " << j->getForce().str() <<")\n";
+             //        exit(EXIT_FAILURE);
+             //   }
+             //}             
 
             // clear force 
             p->setForce(Vector3D(0.0, 0.0, 0.0));
