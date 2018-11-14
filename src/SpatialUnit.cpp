@@ -17,10 +17,10 @@ SpatialUnit::SpatialUnit(float size, float x, float y, float z, spatial_unit_add
 
 /**! Destructor: cleans up the particles */
 SpatialUnit::~SpatialUnit() {
-   for(iterator i=begin(), ie=end(); i!=ie; ++i) {
-       Particle *p = *i;
-       delete p;
-   }
+   //for(iterator i=begin(), ie=end(); i!=ie; ++i) {
+   //    Particle *p = *i;
+   //    delete p;
+   //}
    delete _particles;
 }
 

@@ -38,8 +38,6 @@ class SimSystem {
         p_iterator p_begin(); /**< returns the start of the global particle list */
         p_iterator p_end(); /**< returns the start of the global particle list */
 
-        SpatialUnit * getSpatialUnit(spatial_unit_address_t x); /**< given a spatial unit address finds that spatial unit */
-
         typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
 
         // simulation management
@@ -47,13 +45,16 @@ class SimSystem {
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
-        void addParticle(Particle *p); /**< Add a particle to the system */
+        void addParticle(Particle *p); /**< Add a particle to the system with a global position */
+        void addLocalParticle(Particle *p); /**< Add a particle to the system with position relative to its spatial unti */
         //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
         void bond(Particle *i, Particle *j, std::function<void(Particle* me, Particle *other)> bondf); /**< Bonds particles i and j with bond function bondf */
+        SpatialUnit * getSpatialUnit(spatial_unit_address_t x); /**< returns a spatial unit given a spatial unit address */
 
         // exporting
         void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
+        void emitJSONFromSU(std::string jsonfile); /**< emits the global particle IDs and the position from each spatial unit as a JSON file */
         // debug & testing
         // print the number of particles per spatial unit
         void printSpatialAllocation();

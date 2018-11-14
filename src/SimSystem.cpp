@@ -217,6 +217,49 @@ void SimSystem::bond(Particle *i, Particle *j, std::function<void(Particle *me, 
     return;
 }
 
+// emits the state of the system from the spatial units (relative addressing)
+void SimSystem::emitJSONFromSU(std::string jsonfile) {
+    std::ofstream out;
+    out.open(jsonfile);
+    out <<"{\n";
+    out << "  \"beads\":[\n";
+
+    // iterate through the spatial units and grab the offsets
+    for(iterator i=begin(); i!=end(); ++i){
+        SpatialUnit *s = *i;
+        spatial_unit_address_t pos = s->getAddr(); 
+    
+        float x_off = pos.x * s->getSize(); 
+        float y_off = pos.y * s->getSize(); 
+        float z_off = pos.z * s->getSize(); 
+
+        // iterate through all particles of this spatial unit
+        for(SpatialUnit::iterator ip=s->begin(); ip!=s->end(); ++ip){
+           Particle *cp = *ip;
+           float cp_x = cp->getPos().x() + x_off;
+           float cp_y = cp->getPos().y() + y_off;
+           float cp_z = cp->getPos().z() + z_off;
+
+           // check to make sure that the particle position makes sense
+           if (!isnan(cp_x) && !isnan(cp_y) && !isnan(cp_z)) {
+                out << "\t{\"id\":"<<cp->getID()<<", \"x\":"<<cp_x<<", \"y\":"<<cp_y<<", \"z\":"<<cp_z<<", \"vx\":"<<cp->getVelo().x()<<", \"vy\":"<<cp->getVelo().y()<<", \"vz\":"<<cp->getVelo().z()<<", \"type\":"<<cp->getType()<<"}";
+
+                if(cp->getID() != (_particles->size()-1) )
+                    out << ",\n";
+                else
+                    out << "\n";
+            } else {
+               printf("Error: NaN encountered when trying to export state of particle: %u\n", cp->getID());
+               exit(EXIT_FAILURE);
+            }
+        }
+    }
+
+    out << "]}\n";
+    out.close();
+    return;
+}
+
 // emits the state of the system as a JSON file
 void SimSystem::emitJSON(std::string jsonfile) {
     std::ofstream out;
@@ -426,13 +469,21 @@ void SimSystem::seq_run(uint32_t period, float emitrate) {
     }
 }
 
-// adds a particle to the system
+// adds a particle to the system with global coordinates
 void SimSystem::addParticle(Particle *p){
     // add the particle to the global particles list
     p->setID(_particles->size()); // just use the current number of particles as a unique ID
     _particles->push_back(p);     
     allocateParticleToSpatialUnit(p); // allocate particle to a processor
 }
+
+// adds a particle to the system with local coordinates
+void SimSystem::addLocalParticle(Particle *p){
+    // add the particle to the global particles list
+    p->setID(_particles->size()); // just use the current number of particles as a unique ID
+    _particles->push_back(p);     
+}
+
 
 // populates the universe with particles from a JSON file
 //void SimSystem::populateFromJSON(std::string jsonfile) {
