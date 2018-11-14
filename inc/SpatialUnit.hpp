@@ -9,9 +9,9 @@
 
 // lets make the spatial units addressable
 typedef struct spatial_unit_address_ {
-    unsigned x;
-    unsigned y;
-    unsigned z;
+    int x;
+    int y;
+    int z;
 } spatial_unit_address_t;
 
 //! SpatialUnit

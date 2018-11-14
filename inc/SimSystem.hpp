@@ -41,7 +41,7 @@ class SimSystem {
         typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
 
         // simulation management
-        void run(uint32_t period); /**< runs the simulation for period timesteps */
+        void run(uint32_t period, float emitrate); /**< runs the simulation for period timesteps */
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management

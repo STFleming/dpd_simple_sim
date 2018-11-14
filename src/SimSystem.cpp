@@ -25,9 +25,9 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
 
     // create the list of _cubes
     _cubes = new std::vector<SpatialUnit *>(); 
-    for(unsigned x=0; x<_D; x++) {
-        for(unsigned y=0; y<_D; y++) {
-            for(unsigned z=0; z<_D; z++) {
+    for(int x=0; x<_D; x++) {
+        for(int y=0; y<_D; y++) {
+            for(int z=0; z<_D; z++) {
                 float fpx = (float)x * _unit_size;
                 float fpy = (float)y * _unit_size;
                 float fpz = (float)z * _unit_size;
@@ -44,9 +44,9 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
 
     // construct the neighbours list for each SpatialUnit
     // not worrying too much about efficiency for the time being for this
-    for(unsigned x=0; x<_D; x++) {
-        for(unsigned y=0; y<_D; y++) {
-            for(unsigned z=0; z<_D; z++) {
+    for(int x=0; x<_D; x++) {
+        for(int y=0; y<_D; y++) {
+            for(int z=0; z<_D; z++) {
                   
                 // calculate offsets
                 int x_neg, y_neg, z_neg; 
@@ -244,17 +244,20 @@ void SimSystem::emitJSONFromSU(std::string jsonfile) {
            if (!isnan(cp_x) && !isnan(cp_y) && !isnan(cp_z)) {
                 out << "\t{\"id\":"<<cp->getID()<<", \"x\":"<<cp_x<<", \"y\":"<<cp_y<<", \"z\":"<<cp_z<<", \"vx\":"<<cp->getVelo().x()<<", \"vy\":"<<cp->getVelo().y()<<", \"vz\":"<<cp->getVelo().z()<<", \"type\":"<<cp->getType()<<"}";
 
-                if(cp->getID() != (_particles->size()-1) )
-                    out << ",\n";
-                else
-                    out << "\n";
+                out << ",\n";
             } else {
                printf("Error: NaN encountered when trying to export state of particle: %u\n", cp->getID());
                exit(EXIT_FAILURE);
             }
         }
     }
-
+    
+    // remove the last comma
+    //out << "\b\b";
+    //out << "  \n";
+    out.seekp(-2,std::ios::end);
+    out << "  \n";
+    
     out << "]}\n";
     out.close();
     return;
@@ -329,9 +332,193 @@ void SimSystem::printSpatialAllocation() {
 
 // runs the simulation for a given period uses the SpatialUnits and passing beads between them to simulate the MPI
 // based approach
-void SimSystem::run(uint32_t period) {
+void SimSystem::run(uint32_t period, float emitrate) {
 
  printf("Running the sim...\n"); 
+ clock_t last_emit = clock();
+ unsigned emit_cnt=0;
+
+ for(uint32_t t=0; t<period; t++) {
+     // for each spatial unit create their local view of the world based on their neighbours states
+     for(iterator i=begin(); i!=end(); ++i) {
+         SpatialUnit *s = *i; // the current spatial unit
+
+         // iterate over all neighbours and solve the forces for all the particles local to this spatial unit          
+         for(SpatialUnit::n_iterator j=s->n_begin(); j!=s->n_end(); ++j) {
+            SpatialUnit *neighbour = *j;
+
+            // calculate the relative position offsets for this neighbour
+            spatial_unit_address_t n_addr = neighbour->getAddr();
+            spatial_unit_address_t this_addr = s->getAddr();
+            float x_off = (float)(this_addr.x - n_addr.x)*neighbour->getSize();
+            float y_off = (float)(this_addr.y - n_addr.y)*neighbour->getSize();
+            float z_off = (float)(this_addr.z - n_addr.z)*neighbour->getSize();
+
+            // loop over all the particles in this neighbour and apply the forces to our particles
+            for(SpatialUnit::iterator np=neighbour->begin(); np!=neighbour->end(); ++np){
+              // move the position of this particle to be relative to our own (we will need to restore it once we are done) 
+               Particle *fp = *np;
+               Vector3D fp_pos = fp->getPos();
+               Vector3D n_fp_pos(fp_pos.x() + x_off, fp_pos.y() + y_off, fp_pos.z() + z_off);
+               fp->setPos(n_fp_pos); 
+                
+               // loop over all our particles and apply the forces and update
+               for(SpatialUnit::iterator this_pi = s->begin(); this_pi != s->end(); ++this_pi){
+                   Particle *this_p = *this_pi; // apply the forces to our particle
+                   if(this_p->getPos().dist(fp->getPos()) <= _r_c) {
+                       // these particles are in range of each other
+                        // make sure that we have not done this pairwise interaction already (this is a silly way to do things)
+                        bool already_pair = false;
+                        for(PartPair::iterator pi=_seq_pairs->begin(), pie=_seq_pairs->end(); pi!=pie; ++pi) {
+                            std::tuple<Particle *, Particle*> cur_pair = *pi;
+                            bool pair_one = (fp->getID() == std::get<0>(cur_pair)->getID()) && (this_p->getID() == std::get<1>(cur_pair)->getID());
+                            bool pair_two = (this_p->getID() == std::get<0>(cur_pair)->getID()) && (fp->getID() == std::get<1>(cur_pair)->getID());
+                            if (pair_one || pair_two) {
+                               already_pair = true;
+                               break;
+                            }
+                        }
+                        if(!already_pair) {
+                            // do the force update
+                            this_p->callConservative(fp);
+                            this_p->callDrag(fp);
+                            this_p->callRandom(fp);
+
+                            Particle *bond1 = fp->getBondedParticle();
+                            Particle *bond2 = this_p->getBondedParticle();
+                            if( (bond1 == this_p) || (bond2 == fp) ) { // these particles are bonded 
+                               this_p->callBond();
+                            }  
+
+                            std::tuple<Particle *, Particle*> part_pair = std::make_tuple(fp, this_p);
+                            _seq_pairs->push_back(part_pair);
+                        } 
+
+                   }
+               }
+               
+               fp->setPos(fp_pos); // restore the position
+            }
+         }
+     }
+
+     // we are done updating all the forces, now we can start updating the positions and doing particle migration
+     // update v_i and r_i for each particle
+     // iterate over all spatial units
+     for(iterator sui=begin(); sui!=end(); ++sui) {
+         SpatialUnit *su = *sui;
+         for(SpatialUnit::iterator i=su->begin(), ie=su->end(); i!=ie; ++i) {
+              Particle *p = *i;
+              float mass = p->getMass();
+              Vector3D acceleration = p->getForce()/mass;
+              Vector3D delta_v = (p->getForce()/mass) * _dt;
+              // update velocity
+              p->setVelo(p->getVelo() + delta_v); 
+
+              // euler update position & include wraparound
+              //Vector3D point = p->getPos() +p->getVelo()*_dt;
+
+              // velocity verlet
+              Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
+
+              // here we need to check for migration
+              spatial_unit_address_t dest; // the spatial unit where we might be potentially sending this particle
+              spatial_unit_address_t curr_addr = su->getAddr();
+              bool migrating = false;
+
+              // migration in the x direction
+              if(point.x() >= su->getSize()) {
+                 migrating = true;
+                 if(curr_addr.x == (_D - 1))
+                     dest.x = 0;
+                 else
+                     dest.x = curr_addr.x + 1; 
+                 point.x(point.x() - su->getSize());
+              } else if (point.x() < 0.0) {
+                 migrating = true;
+                 if(curr_addr.x == 0)
+                     dest.x = _D - 1;
+                 else
+                     dest.x = curr_addr.x - 1; 
+                 point.x(point.x() + su->getSize());
+              } else {
+                 dest.x = curr_addr.x; 
+              } 
+
+              // migration in the y direction
+              if(point.y() >= su->getSize()) {
+                 migrating = true;
+                 if(curr_addr.y == (_D - 1))
+                     dest.y = 0;
+                 else
+                     dest.y = curr_addr.y + 1; 
+                 point.y(point.y() - su->getSize());
+              } else if (point.y() < 0.0) {
+                 migrating = true;
+                 if(curr_addr.y == 0)
+                     dest.y = _D - 1;
+                 else
+                     dest.y = curr_addr.y - 1; 
+                 point.y(point.y() + su->getSize());
+              } else {
+                 dest.y = curr_addr.y; 
+              } 
+
+              // migration in the z direction
+              if(point.z() >= su->getSize()) {
+                 migrating = true;
+                 if(curr_addr.z == (_D - 1))
+                     dest.z = 0;
+                 else
+                     dest.z = curr_addr.z + 1; 
+                 point.z(point.z() - su->getSize());
+              } else if (point.z() < 0.0) {
+                 migrating = true;
+                 if(curr_addr.z == 0)
+                     dest.z = _D - 1;
+                 else
+                     dest.z = curr_addr.z - 1; 
+                 point.z(point.z() + su->getSize());
+              } else {
+                 dest.z = curr_addr.z; 
+              } 
+
+              // do we actually need to migrate?
+              if(migrating) {
+                 SpatialUnit *dest_su = getSpatialUnit(dest);
+                 dest_su->addLocalParticle(p);
+                 if(!su->removeParticle(p)) {
+                   printf("ERROR: unable to remove a particle from a spatial unit\n"); 
+                   exit(EXIT_FAILURE);
+                 }
+              }
+
+              // update the position
+              p->setPos(point); 
+
+              // clear force 
+              p->setForce(Vector3D(0.0, 0.0, 0.0));
+         }
+     }
+
+     // cleanup: 
+     _seq_pairs->clear(); // we no longer need to track the pairs
+
+     // do we want to emit the state of the simulation
+     if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
+         emit_cnt++;
+
+         emitJSONFromSU("state.json"); // also replace the latest frame
+         printf("u\n"); // update command set via stdout to nodejs server
+         fflush(stdout);
+         last_emit = clock();
+     }
+
+     // update time
+     _ts = _ts + 1;
+     _t = _t + _dt;
+
+   } // period has elapsed
 
 }
 
