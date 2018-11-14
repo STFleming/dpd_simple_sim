@@ -102,6 +102,16 @@ bool SpatialUnit::removeParticle(Particle *p){
   return false;
 }
 
+// returns a copy of the particles list (so things can be iterated over and removed)
+std::vector<Particle *> SpatialUnit::copyOfParticles(){
+    std::vector<Particle *> t;
+    for(SpatialUnit::iterator i=begin(); i!=end(); ++i){
+         Particle *p = *i;
+         t.push_back(p);
+    }
+    return t;
+}
+
 /**! returns the number of beads within this spatial unit */
 unsigned SpatialUnit::numBeads() {
     return _particles->size();

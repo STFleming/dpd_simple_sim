@@ -343,6 +343,29 @@ void SimSystem::run(uint32_t period, float emitrate) {
      for(iterator i=begin(); i!=end(); ++i) {
          SpatialUnit *s = *i; // the current spatial unit
 
+         // iterate over itself and apply the forces to it's internal particles
+         for(SpatialUnit::iterator csu_p1=s->begin(); csu_p1 !=s->end(); ++csu_p1){
+             Particle *p1 = *csu_p1;
+             for(SpatialUnit::iterator csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
+               Particle *p2 = *csu_p2;
+               if(p1 != p2) {
+                  if(p1->getPos().dist(p2->getPos()) <= _r_c){
+                      // do the force update
+                      p1->callConservative(p2);
+                      p1->callDrag(p2);
+                      p1->callRandom(p2);
+
+                      Particle *bond1 = p1->getBondedParticle();
+                      Particle *bond2 = p2->getBondedParticle();
+                      if( (bond1 == p2) || (bond2 == p1) ) { // these particles are bonded 
+                         p1->callBond();
+                      }  
+                   }
+               } 
+             }
+          }
+
+
          // iterate over all neighbours and solve the forces for all the particles local to this spatial unit          
          for(SpatialUnit::n_iterator j=s->n_begin(); j!=s->n_end(); ++j) {
             SpatialUnit *neighbour = *j;
@@ -367,37 +390,21 @@ void SimSystem::run(uint32_t period, float emitrate) {
                    Particle *this_p = *this_pi; // apply the forces to our particle
                    if(this_p->getPos().dist(fp->getPos()) <= _r_c) {
                        // these particles are in range of each other
-                        // make sure that we have not done this pairwise interaction already (this is a silly way to do things)
-                        bool already_pair = false;
-                        for(PartPair::iterator pi=_seq_pairs->begin(), pie=_seq_pairs->end(); pi!=pie; ++pi) {
-                            std::tuple<Particle *, Particle*> cur_pair = *pi;
-                            bool pair_one = (fp->getID() == std::get<0>(cur_pair)->getID()) && (this_p->getID() == std::get<1>(cur_pair)->getID());
-                            bool pair_two = (this_p->getID() == std::get<0>(cur_pair)->getID()) && (fp->getID() == std::get<1>(cur_pair)->getID());
-                            if (pair_one || pair_two) {
-                               already_pair = true;
-                               break;
-                            }
-                        }
-                        if(!already_pair) {
-                            // do the force update
-                            this_p->callConservative(fp);
-                            this_p->callDrag(fp);
-                            this_p->callRandom(fp);
+                       // do the force update
+                       this_p->callConservative(fp);
+                       this_p->callDrag(fp);
+                       this_p->callRandom(fp);
 
-                            Particle *bond1 = fp->getBondedParticle();
-                            Particle *bond2 = this_p->getBondedParticle();
-                            if( (bond1 == this_p) || (bond2 == fp) ) { // these particles are bonded 
-                               this_p->callBond();
-                            }  
+                       Particle *bond1 = fp->getBondedParticle();
+                       Particle *bond2 = this_p->getBondedParticle();
+                       if( (bond1 == this_p) || (bond2 == fp) ) { // these particles are bonded 
+                          this_p->callBond();
+                       }  
 
-                            std::tuple<Particle *, Particle*> part_pair = std::make_tuple(fp, this_p);
-                            _seq_pairs->push_back(part_pair);
-                        } 
+                  } 
 
-                   }
-               }
-               
-               fp->setPos(fp_pos); // restore the position
+              }
+              fp->setPos(fp_pos); // restore the position
             }
          }
      }
@@ -407,7 +414,8 @@ void SimSystem::run(uint32_t period, float emitrate) {
      // iterate over all spatial units
      for(iterator sui=begin(); sui!=end(); ++sui) {
          SpatialUnit *su = *sui;
-         for(SpatialUnit::iterator i=su->begin(), ie=su->end(); i!=ie; ++i) {
+         std::vector<Particle *> tmp_su_particles = su->copyOfParticles();
+         for(SpatialUnit::iterator i=tmp_su_particles.begin(), ie=tmp_su_particles.end(); i!=ie; ++i) {
               Particle *p = *i;
               float mass = p->getMass();
               Vector3D acceleration = p->getForce()/mass;
@@ -486,9 +494,13 @@ void SimSystem::run(uint32_t period, float emitrate) {
               // do we actually need to migrate?
               if(migrating) {
                  SpatialUnit *dest_su = getSpatialUnit(dest);
+
                  dest_su->addLocalParticle(p);
                  if(!su->removeParticle(p)) {
-                   printf("ERROR: unable to remove a particle from a spatial unit\n"); 
+                   printf("\n\nERROR: unable to remove a particle from a spatial unit\n"); 
+                   spatial_unit_address_t su_addr = su->getAddr();
+                   printf("spatial unit address: <%d,%d,%d>\n", su_addr.x, su_addr.y, su_addr.z); 
+                   printf("particle being removed p:%d pos:%s velo:%s\n", p->getID(), p->getPos().str().c_str(), p->getVelo().str().c_str()); 
                    exit(EXIT_FAILURE);
                  }
               }
@@ -500,9 +512,6 @@ void SimSystem::run(uint32_t period, float emitrate) {
               p->setForce(Vector3D(0.0, 0.0, 0.0));
          }
      }
-
-     // cleanup: 
-     _seq_pairs->clear(); // we no longer need to track the pairs
 
      // do we want to emit the state of the simulation
      if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {

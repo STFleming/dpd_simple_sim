@@ -31,6 +31,9 @@ class SpatialUnit {
         unsigned numNeighbours(); /**, returns the number of neighbours this spatial unit has */
         spatial_unit_address_t getAddr(); /**< returns the address for this spatial unit */
 
+        // make a copy of the spatial_unit list
+        std::vector<Particle *> copyOfParticles(); /**< returns a copy of the _particles list */
+
         // particle iterators
         typedef std::vector<Particle *>::iterator iterator; /**< iterator type for the particles */
         iterator begin(); /**< returns the start of the particle vector */
