@@ -240,10 +240,13 @@ void SimSystem::emitJSONFromSU(std::string jsonfile) {
            float cp_y = cp->getPos().y() + y_off;
            float cp_z = cp->getPos().z() + z_off;
 
+           // print the position of the particles to see if they are actually stuck just on the 
+           // display or in the actual simulation
+           //printf("bead:%d pos:<%.4f, %.4f, %.4f>\n",cp->getID(), cp_x, cp_y, cp_z);
+
            // check to make sure that the particle position makes sense
            if (!isnan(cp_x) && !isnan(cp_y) && !isnan(cp_z)) {
                 out << "\t{\"id\":"<<cp->getID()<<", \"x\":"<<cp_x<<", \"y\":"<<cp_y<<", \"z\":"<<cp_z<<", \"vx\":"<<cp->getVelo().x()<<", \"vy\":"<<cp->getVelo().y()<<", \"vz\":"<<cp->getVelo().z()<<", \"type\":"<<cp->getType()<<"}";
-
                 out << ",\n";
             } else {
                printf("Error: NaN encountered when trying to export state of particle: %u\n", cp->getID());
@@ -325,7 +328,7 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 void SimSystem::printSpatialAllocation() {
    for(SimSystem::iterator i=begin(), e=end(); i!=e; ++i){
        SpatialUnit *cur = *i;
-       position_t pos =  cur->getPos();
+       spatial_unit_address_t pos =  cur->getAddr();
        std::cout << "Number of particles for this spatial unit ("<<pos.x << "," <<pos.y<<","<<pos.z<<"): " << cur->numBeads() << "\n"; 
    }
 }
@@ -334,7 +337,6 @@ void SimSystem::printSpatialAllocation() {
 // based approach
 void SimSystem::run(uint32_t period, float emitrate) {
 
- printf("Running the sim...\n"); 
  clock_t last_emit = clock();
  unsigned emit_cnt=0;
 
@@ -348,7 +350,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
              Particle *p1 = *csu_p1;
              for(SpatialUnit::iterator csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
                Particle *p2 = *csu_p2;
-               if(p1 != p2) {
+               if(p1->getID() != p2->getID()) {
                   if(p1->getPos().dist(p2->getPos()) <= _r_c){
                       // do the force update
                       p1->callConservative(p2);
@@ -372,10 +374,33 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
             // calculate the relative position offsets for this neighbour
             spatial_unit_address_t n_addr = neighbour->getAddr();
-            spatial_unit_address_t this_addr = s->getAddr();
-            float x_off = (float)(this_addr.x - n_addr.x)*neighbour->getSize();
-            float y_off = (float)(this_addr.y - n_addr.y)*neighbour->getSize();
-            float z_off = (float)(this_addr.z - n_addr.z)*neighbour->getSize();
+            spatial_unit_address_t this_addr = s->getAddr(); // we need wraparound for this
+
+            // get relative positions from the abs spatial unit addresses
+            int x_rel = n_addr.x - this_addr.x;
+            int y_rel = n_addr.y - this_addr.y;
+            int z_rel = n_addr.z - this_addr.z; 
+            
+            // periodic boundary adjusting
+            if(x_rel > 1)
+                  x_rel = -1;
+            else if (x_rel < -1)
+                  x_rel = 1;
+            
+            if(y_rel > 1)
+                  y_rel = -1;
+            else if (y_rel < -1)
+                  y_rel = 1;
+
+            if(z_rel > 1)
+                  z_rel = -1;
+            else if (z_rel < -1)
+                  z_rel = 1;
+                   
+
+            float x_off = (float)(x_rel)*neighbour->getSize();
+            float y_off = (float)(y_rel)*neighbour->getSize();
+            float z_off = (float)(z_rel)*neighbour->getSize();
 
             // loop over all the particles in this neighbour and apply the forces to our particles
             for(SpatialUnit::iterator np=neighbour->begin(); np!=neighbour->end(); ++np){
@@ -389,6 +414,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
                for(SpatialUnit::iterator this_pi = s->begin(); this_pi != s->end(); ++this_pi){
                    Particle *this_p = *this_pi; // apply the forces to our particle
                    if(this_p->getPos().dist(fp->getPos()) <= _r_c) {
+ 
                        // these particles are in range of each other
                        // do the force update
                        this_p->callConservative(fp);
@@ -412,6 +438,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
      // we are done updating all the forces, now we can start updating the positions and doing particle migration
      // update v_i and r_i for each particle
      // iterate over all spatial units
+     std::vector<Particle *> to_migrate; // list of particles we want to migrate
+     std::vector<SpatialUnit *> src_migrate; // the source spatial unit for each migration
+     std::vector<SpatialUnit *> dest_migrate; // the destination spatial unit for each migration
      for(iterator sui=begin(); sui!=end(); ++sui) {
          SpatialUnit *su = *sui;
          std::vector<Particle *> tmp_su_particles = su->copyOfParticles();
@@ -422,6 +451,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
               Vector3D delta_v = (p->getForce()/mass) * _dt;
               // update velocity
               p->setVelo(p->getVelo() + delta_v); 
+              //p->setVelo(Vector3D(0.1,0.1,0.1)); 
 
               // euler update position & include wraparound
               //Vector3D point = p->getPos() +p->getVelo()*_dt;
@@ -494,15 +524,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
               // do we actually need to migrate?
               if(migrating) {
                  SpatialUnit *dest_su = getSpatialUnit(dest);
-
-                 dest_su->addLocalParticle(p);
-                 if(!su->removeParticle(p)) {
-                   printf("\n\nERROR: unable to remove a particle from a spatial unit\n"); 
-                   spatial_unit_address_t su_addr = su->getAddr();
-                   printf("spatial unit address: <%d,%d,%d>\n", su_addr.x, su_addr.y, su_addr.z); 
-                   printf("particle being removed p:%d pos:%s velo:%s\n", p->getID(), p->getPos().str().c_str(), p->getVelo().str().c_str()); 
-                   exit(EXIT_FAILURE);
-                 }
+                 to_migrate.push_back(p);            
+                 src_migrate.push_back(su);
+                 dest_migrate.push_back(dest_su);
               }
 
               // update the position
@@ -512,6 +536,26 @@ void SimSystem::run(uint32_t period, float emitrate) {
               p->setForce(Vector3D(0.0, 0.0, 0.0));
          }
      }
+
+     // perform all the migrations
+     for(unsigned i=0; i<to_migrate.size(); i++){
+          Particle *p = to_migrate[i];
+          SpatialUnit *src = src_migrate[i];
+          SpatialUnit *dst = dest_migrate[i];
+
+          dst->addLocalParticle(p); 
+          if(!src->removeParticle(p)) {
+            printf("\n\nERROR: unable to remove a particle from a spatial unit\n"); 
+            spatial_unit_address_t su_addr = src->getAddr();
+            printf("particle being removed p:%d pos:%s velo:%s\n", p->getID(), p->getPos().str().c_str(), p->getVelo().str().c_str()); 
+            exit(EXIT_FAILURE);
+          }
+     }
+
+     // clear the migration lists 
+     to_migrate.clear();
+     src_migrate.clear();
+     dest_migrate.clear();
 
      // do we want to emit the state of the simulation
      if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
