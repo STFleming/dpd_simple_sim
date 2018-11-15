@@ -8,7 +8,7 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.02 
+#define DELTA_T 0.01 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
@@ -24,9 +24,9 @@ void conF(Particle *me, Particle *other){
 
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
+    float r_ij_dist = r_i.dist(r_j); // get the distance
     //Vector3D r_ij = r_i - r_j; // vector between the points
-    Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+    Vector3D r_ij = r_i - r_j;
  
     // Equation 8.5 in the dl_meso manual
     Vector3D force = (r_ij/r_ij_dist) * (a_ij * (1.0 - (r_ij_dist/r_c)));
@@ -35,7 +35,6 @@ void conF(Particle *me, Particle *other){
 
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force*-1.0); 
     return;
 }
 
@@ -48,9 +47,8 @@ void dragF(Particle *me, Particle *other) {
    // // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-    //Vector3D r_ij = r_j - r_i; // vector between the points
-    Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+    float r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D r_ij = r_j - r_i; // vector between the points
 
     // switching function
     float w_d = (1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c);
@@ -64,7 +62,6 @@ void dragF(Particle *me, Particle *other) {
 
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
-    other->setForce( other->getForce() + force*-1.0); 
     return;
 }
 
@@ -80,9 +77,8 @@ void randF(Particle *me, Particle *other) {
    // position and distance
    Vector3D r_i = me->getPos();
    Vector3D r_j = other->getPos();
-   float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-   //Vector3D r_ij = r_j - r_i; // vector between the points
-   Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+   float r_ij_dist = r_i.dist(r_j); // get the distance
+   Vector3D r_ij = r_j - r_i; // vector between the points
 
    // switching function
    float w_r = (1.0 - r_ij_dist/r_c);
@@ -93,8 +89,15 @@ void randF(Particle *me, Particle *other) {
 
    // update the forces acting on the two particles
    me->setForce( me->getForce() + force); 
-   other->setForce( other->getForce() + force*-1.0); 
    return;
+}
+
+spatial_unit_address_t rand_su(uint32_t D){
+     spatial_unit_address_t su;
+     su.x = rand()%D;
+     su.y = rand()%D;
+     su.z = rand()%D;
+     return su;
 }
 
 // Test program
@@ -103,39 +106,47 @@ int main() {
    const float unisize = UNISIZE_D;
 
    // number of particles (beads) in the universe
-   const unsigned n = 1000;
-   const unsigned w = 600;
-   const unsigned y = 300;
-   const unsigned r = 100;
+   const unsigned w = 1000;
 
    // mass of the particles
    const float mass_p0 = 1.0;
-   const float mass_p1 = 1.0;
-   const float mass_p2 = 1.0;
 
-   SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
-   
-   // Add lots of water
-   for(unsigned i=0; i<w; i++) {
-       Particle *p1 = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
-       universe.addParticle(p1);
+   const unsigned num_cubes = 10;
+   const float cube_size = unisize/num_cubes;
+
+   SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
+
+   // add water
+   for(int w=0; w<600; w++){
+       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
+       Particle *p = new Particle(randPos(cube_size), 0, mass_p0, conF, dragF, randF);
+       s->addLocalParticle(p);
+       universe.addLocalParticle(p);
    }
 
-  // Add the first particle
-  for(unsigned i=0; i<y; i++) {
-       Particle *p2 = new Particle(randPos(unisize), 1, mass_p1, conF, dragF, randF);
-       universe.addParticle(p2);
-  }
-  for(unsigned i=0; i<r; i++) {
-       Particle *p3 = new Particle(randPos(unisize), 2, mass_p2, conF, dragF, randF);
-       universe.addParticle(p3);
-  }
+   // add orange oil 
+   for(int w=0; w<200; w++){
+       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
+       Particle *p = new Particle(randPos(cube_size), 1, mass_p0, conF, dragF, randF);
+       s->addLocalParticle(p);
+       universe.addLocalParticle(p);
+   }
 
-   // emit the initial state (read by the web renderer interface)
-   universe.emitJSON("state.json");
+   // add green oil 
+   for(int w=0; w<200; w++){
+       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
+       Particle *p = new Particle(randPos(cube_size), 2, mass_p0, conF, dragF, randF);
+       s->addLocalParticle(p);
+       universe.addLocalParticle(p);
+   }
 
-   // run the universe on a single thread for many timesteps, emitting it's value every 0.07 seconds 
-   universe.seq_run(1000000000, 0.07);
+   // emit the state of the simulation
+   universe.emitJSONFromSU("state.json");
+   
+   // run the simulation universe for 10K timesteps 
+   universe.run(100000000000, 0.08);
 
-   std::cout << "done\n";
+   // emit the state of the simulation
+   universe.emitJSONFromSU("state.json");
+
 }
