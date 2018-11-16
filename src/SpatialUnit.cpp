@@ -67,20 +67,20 @@ void SpatialUnit::addLocalParticle(Particle *p){
      // check to make sure the position is local  
      Vector3D p_pos = p->getPos();
 
-     if( ( p_pos.x() < 0 ) || (p_pos.x() >= _size) ){
-         printf("Error: the x dimension for this particle is not local\n");
+     if( ( p_pos.x() < 0 ) || (p_pos.x() > _size) ){
+         printf("Error adding particle p(%d): the x dimension for this particle is not local:%s\n", p->getID(), p_pos.str().c_str());
          fflush(stdout);
          exit(EXIT_FAILURE);
      }  
     
-     if( ( p_pos.y() < 0 ) || (p_pos.y() >= _size) ){
-         printf("Error: the y dimension for this particle is not local\n");
+     if( ( p_pos.y() < 0 ) || (p_pos.y() > _size) ){
+         printf("Error adding particle p(%d): the y dimension for this particle is not local pos:%s\n", p->getID(), p_pos.str().c_str());
          fflush(stdout);
          exit(EXIT_FAILURE);
      }  
      
-     if( ( p_pos.z() < 0 ) || (p_pos.z() >= _size) ){
-         printf("Error: the z dimension for this particle is not local\n");
+     if( ( p_pos.z() < 0 ) || (p_pos.z() > _size) ){
+         printf("Error adding particle p(%d): the z dimension for this particle is not local pos:%s\n", p->getID(), p_pos.str().c_str());
          fflush(stdout);
          exit(EXIT_FAILURE);
      }  

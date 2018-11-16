@@ -33,7 +33,7 @@ void conF(Particle *me, Particle *other){
     assert(r_ij_dist <= R_C);
 
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + force); 
+    //me->setForce( me->getForce() + force); 
     return;
 }
 
@@ -60,12 +60,21 @@ void dragF(Particle *me, Particle *other) {
     Vector3D force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (-1.0 * drag_coef); 
 
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + force); 
+    //me->setForce( me->getForce() + force); 
     return;
 }
 
+// dt10's hash based random num gen
+uint32_t pairwise_rand(uint32_t grand, uint32_t pid1, uint32_t pid2){
+    uint32_t la=std::min(pid1, pid2);
+    uint32_t lb=std::max(pid1, pid2);
+    uint32_t s0 = (pid1 ^ grand)*pid2;
+    uint32_t s1 = (pid2*grand)^pid1;
+    return s0 + s1;
+}
+
 // random pairwise force declaration
-void randF(Particle *me, Particle *other) {
+void randF(uint32_t grand, Particle *me, Particle *other) {
 
    const float K_BT = 1.0;
    const float drag_coef = 4.5; // the drag coefficient (no idea what to set this at)
@@ -82,21 +91,15 @@ void randF(Particle *me, Particle *other) {
    // switching function
    float w_r = (1.0 - r_ij_dist/r_c);
       
+   // random number generation
+   float r = (pairwise_rand(grand, me->getID(), other->getID()) / (float)RAND_MAX * 1.0);
+
    // force calculation
-   float r = (rand() / (float)RAND_MAX * 1.0);
    Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
 
    // update the forces acting on the two particles
    me->setForce( me->getForce() + force); 
    return;
-}
-
-spatial_unit_address_t rand_su(uint32_t D){
-     spatial_unit_address_t su;
-     su.x = rand()%D;
-     su.y = rand()%D;
-     su.z = rand()%D;
-     return su;
 }
 
 // Test program
@@ -116,34 +119,28 @@ int main() {
    SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
 
    // add water
-   for(int w=0; w<1000; w++){
-       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
-       Particle *p = new Particle(randPos(cube_size), 0, mass_p0, conF, dragF, randF);
-       s->addLocalParticle(p);
-       universe.addLocalParticle(p);
+   for(int w=0; w<600; w++){
+       Particle *p = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
+       universe.addParticle(p);
    }
 
    // add orange oil 
    for(int w=0; w<300; w++){
-       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
-       Particle *p = new Particle(randPos(cube_size), 1, mass_p0, conF, dragF, randF);
-       s->addLocalParticle(p);
-       universe.addLocalParticle(p);
+       Particle *p = new Particle(randPos(unisize), 1, mass_p0, conF, dragF, randF);
+       universe.addParticle(p);
    }
 
    // add green oil 
-   for(int w=0; w<300; w++){
-       SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
-       Particle *p = new Particle(randPos(cube_size), 2, mass_p0, conF, dragF, randF);
-       s->addLocalParticle(p);
-       universe.addLocalParticle(p);
+   for(int w=0; w<100; w++){
+       Particle *p = new Particle(randPos(unisize), 2, mass_p0, conF, dragF, randF);
+       universe.addParticle(p);
    }
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
    
    // run the simulation universe for 10K timesteps 
-   universe.run(1000000000, 0.15);
+   universe.run(-1, 0.15);
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");

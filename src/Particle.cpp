@@ -1,7 +1,7 @@
 #include "Particle.hpp"
 
 // constructor (sets the initial position of the particle)
-Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random) {
+Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(uint32_t grand, Particle *me, Particle *other)> random) {
    _pos = pos;
    _prev_pos = pos+0.0001; // small addition to avoid initial condition problems
    _velocity = Vector3D(0.0, 0.0, 0.0);
@@ -106,8 +106,8 @@ void Particle::callDrag(Particle *other) {
 }
 
 // calls the random force function
-void Particle::callRandom(Particle *other) {
-    _random(this, other);
+void Particle::callRandom(uint32_t grand, Particle *other) {
+    _random(grand, this, other);
 }
 
 // calls the bond force function

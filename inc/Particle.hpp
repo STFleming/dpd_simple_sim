@@ -9,7 +9,7 @@
 // Particle class
 class Particle {
     public:
-        Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
+        Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(uint32_t grand, Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
         ~Particle(); /**< destructor that destroys this particle */ 
         Vector3D getPos(); /**< get the position of this particle */
         void setPos(Vector3D npos); /**< set a new position for this particle */
@@ -28,7 +28,7 @@ class Particle {
         // for calling the separate force functions
         void callConservative(Particle *other); /**< calls the conservative force and applied it to this */
         void callDrag(Particle *other); /**< calls the drag force and applied to this */
-        void callRandom(Particle *other); /**< calls the random force function applied to this */
+        void callRandom(uint32_t grand, Particle *other); /**< calls the random force function applied to this */
         void callBond(); /**< calls the force on the bonded particle */
 
         // sets the bond force
@@ -50,7 +50,7 @@ class Particle {
         // Force functions
         std::function<void(Particle * me, Particle * other)> _conservative; /**< the pairwise conservative force function */ 
         std::function<void(Particle * me, Particle * other)> _drag; /**< the pairwise drag force function */
-        std::function<void(Particle * me, Particle * other)> _random; /**< the pairwise random force function */
+        std::function<void(uint32_t grand, Particle * me, Particle * other)> _random; /**< the pairwise random force function */
         std::function<void(Particle *me, Particle *other)> _bond; /**< the pairwise bonded force (may or may not exist) */
 };
 

@@ -352,6 +352,8 @@ void SimSystem::run(uint32_t period, float emitrate) {
  unsigned emit_cnt=0;
 
  for(uint32_t t=0; t<period; t++) {
+     _grand = rand(); // get a new global random number 
+
      // for each spatial unit create their local view of the world based on their neighbours states
      for(iterator i=begin(); i!=end(); ++i) {
          SpatialUnit *s = *i; // the current spatial unit
@@ -366,7 +368,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
                       // do the force update
                       p1->callConservative(p2);
                       p1->callDrag(p2);
-                      p1->callRandom(p2);
+                      p1->callRandom(_grand, p2);
 
                       Particle *bond1 = p1->getBondedParticle();
                       Particle *bond2 = p2->getBondedParticle();
@@ -430,7 +432,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
                        // do the force update
                        this_p->callConservative(fp);
                        this_p->callDrag(fp);
-                       this_p->callRandom(fp);
+                       this_p->callRandom(_grand, fp);
 
                        Particle *bond1 = fp->getBondedParticle();
                        Particle *bond2 = this_p->getBondedParticle();
@@ -592,132 +594,6 @@ void SimSystem::run(uint32_t period, float emitrate) {
 // this is the naive implementation of this algorithm (horrifically slow)
 void SimSystem::seq_run(uint32_t period, float emitrate) {
 
-    unsigned start_ts = _ts;
-    clock_t last_emit = clock();
-    unsigned emit_cnt=0;
-    while(_ts <= start_ts + period) { // run for period timesteps
-
-        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
-            for(p_iterator j=p_begin(), je=p_end(); j!=je; ++j) {
-                Particle *p1 = *i;
-                Particle *p2 = *j;
-                if(p1 != p2) { // particles do not apply forces to themselves
-                    if ( p1->getPos().toroidal_dist(p2->getPos(), _N) <= _r_c ) {
-                        // this particle is in range
-                        // make sure that we have not done this pairwise interaction already
-                        bool already_pair = false;
-                        for(PartPair::iterator pi=_seq_pairs->begin(), pie=_seq_pairs->end(); pi!=pie; ++pi) {
-                            std::tuple<Particle *, Particle*> cur_pair = *pi;
-                            bool pair_one = (p1->getID() == std::get<0>(cur_pair)->getID()) && (p2->getID() == std::get<1>(cur_pair)->getID());
-                            bool pair_two = (p2->getID() == std::get<0>(cur_pair)->getID()) && (p1->getID() == std::get<1>(cur_pair)->getID());
-                            if (pair_one || pair_two) {
-                               already_pair = true;
-                               break;
-                            }
-                        }
-                        if(!already_pair) {
-                            // do the force update
-                            p1->callConservative(p2);
-                            p1->callDrag(p2);
-                            p1->callRandom(p2);
-
-                            Particle *bond1 = p1->getBondedParticle();
-                            Particle *bond2 = p2->getBondedParticle();
-                            if( (bond1 == p2) || (bond2 == p1) ) { // these particles are bonded 
-                               p1->callBond();
-                            }  
-
-                            std::tuple<Particle *, Particle*> part_pair = std::make_tuple(p1, p2);
-                            _seq_pairs->push_back(part_pair);
-                        } 
-                    } 
-                }
-            }
-        } 
-
-
-        // update v_i and r_i for each particle
-        for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
-             Particle *p = *i;
-             float mass = p->getMass();
-             Vector3D acceleration = p->getForce()/mass;
-             Vector3D delta_v = (p->getForce()/mass) * _dt;
-             // update velocity
-             p->setVelo(p->getVelo() + delta_v); 
-
-             // euler update position & include wraparound
-             //Vector3D point = p->getPos() +p->getVelo()*_dt;
-
-             // velocity verlet
-             Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
-
-             // wraparound x direction
-             if(point.x() < 0.0)
-                  point.x(point.x() + _N); 
-             if(point.x() >= _N)
-                  point.x(point.x() - _N); 
-
-             // wrapointaround y direction
-             if(point.y() < 0.0)
-                  point.y(point.y() + _N); 
-             if(point.y() >= _N)
-                  point.y(point.y() - _N); 
-
-             // wrapointaround z direction
-             if(point.z() < 0.0)
-                  point.z(point.z() + _N); 
-             if(point.z() >= _N)
-                  point.z(point.z() - _N); 
-
-             // update the position
-             p->setPos(point); 
-
-
-             // sanity assertion check for bonded particles
-             //if(p->isBonded()) {
-             //   if(p->getPos().toroidal_dist(p->getBondedParticle()->getPos(), _N) > _r_c){
-             //        Particle *i = p;
-             //        Particle *j = p->getBondedParticle();
-             //        std::cerr << "Error! bonded beads: "<< i->getID()<<" <-> "<< j->getID()<<"  have a broken bond\n";
-             //        std::cerr << "Pos of Bead: "<<i->getID() << " is "<< i->getPos().str() <<"\n"; 
-             //        std::cerr << "Pos of Bead: "<<j->getID() << " is "<< j->getPos().str() <<"\n"; 
-             //        std::cerr << "Previous pos of Bead: "<<i->getID() << " is "<< i->getPrevPos().str() <<"\n"; 
-             //        std::cerr << "Previous pos of Bead: "<<j->getID() << " is "<< j->getPrevPos().str() <<"\n"; 
-             //        std::cerr << "Velocity of Bead: "<<i->getID() << " is "<< i->getVelo().str() <<"\n"; 
-             //        std::cerr << "Velocity of Bead: "<<j->getID() << " is "<< j->getVelo().str() <<"\n"; 
-             //        std::cerr << "Distance between Beads: "<<i->getPos().toroidal_dist(j->getPos(), _N) <<"\n"; 
-             //        std::cerr << "Force of beads: Bead = "<<i->getID()<< " (Force = " << i->getForce().str() << ")   Bead = "<< j->getID() <<" (Force = " << j->getForce().str() <<")\n";
-             //        exit(EXIT_FAILURE);
-             //   }
-             //}             
-
-            // clear force 
-            p->setForce(Vector3D(0.0, 0.0, 0.0));
-
-        } 
-
-
-        // cleanup: 
-        _seq_pairs->clear(); // we no longer need to track the pairs
-
-        // do we want to emit the state of the simulation
-        if ((float(clock() - last_emit) / CLOCKS_PER_SEC) > emitrate) {
-            //std::stringstream curframe;
-            //curframe << "frames/state_" << emit_cnt << ".json"; 
-            //emitJSON(curframe.str()); //emit the frame into the frames folder for later retrieval
-            emit_cnt++;
-
-            emitJSON("state.json"); // also replace the latest frame
-            printf("u\n"); // update command set via stdout to nodejs server
-            fflush(stdout);
-            last_emit = clock();
-        }
-
-
-        // update time
-        _ts = _ts + 1;
-        _t = _t + _dt;
-    }
 }
 
 // adds a particle to the system with global coordinates

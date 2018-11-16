@@ -71,6 +71,7 @@ class SimSystem {
         std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
         std::vector<Particle *>* _particles; /**< the global list of particles */
         PartPair* _seq_pairs; /**< used in the seq_run to keep track of which pairwise interactions have already been processed */  
+         uint32_t _grand; /**< a global random number used for dt10's has based random number tech , updated every simulation step and passed to the rand force function*/
         
 };
 
