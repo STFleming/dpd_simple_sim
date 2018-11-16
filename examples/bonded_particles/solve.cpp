@@ -19,21 +19,16 @@ void conF(Particle *me, Particle *other){
 
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-    //Vector3D r_ij = r_i - r_j; // vector between the points
-    Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+    float r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D r_ij = r_i - r_j; // vector between the points
  
     // Equation 8.5 in the dl_meso manual
     Vector3D force = (r_ij/r_ij_dist) * (a_ij * (1.0 - (r_ij_dist/r_c)));
 
     assert(r_ij_dist <= R_C);
 
-    // direction mask
-    Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
-
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + mask*force); 
-    other->setForce( other->getForce() + mask*force*-1.0); 
+    me->setForce( me->getForce() + force); 
 
     return;
 }
@@ -47,9 +42,8 @@ void dragF(Particle *me, Particle *other) {
    // // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
-    float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-    //Vector3D r_ij = r_j - r_i; // vector between the points
-    Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+    float r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D r_ij = r_j - r_i; // vector between the points
 
     // switching function
     float w_d = (1.0 - r_ij_dist / r_c)*(1.0 - r_ij_dist / r_c);
@@ -61,12 +55,8 @@ void dragF(Particle *me, Particle *other) {
      
     Vector3D force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (-1.0 * drag_coef); 
 
-    // direction mask
-    Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
-
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + mask*force); 
-    other->setForce( other->getForce() + mask*force*-1.0); 
+    me->setForce( me->getForce() + force); 
 
     return;
 }
@@ -83,9 +73,8 @@ void randF(Particle *me, Particle *other) {
    // position and distance
    Vector3D r_i = me->getPos();
    Vector3D r_j = other->getPos();
-   float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-   //Vector3D r_ij = r_j - r_i; // vector between the points
-   Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+   float r_ij_dist = r_i.dist(r_j); // get the distance
+   Vector3D r_ij = r_j - r_i; // vector between the points
 
    // switching function
    float w_r = (1.0 - r_ij_dist/r_c);
@@ -94,12 +83,8 @@ void randF(Particle *me, Particle *other) {
    float r = (rand() / (float)RAND_MAX * 1.0);
    Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
 
-   // direction mask
-   Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
-
    // update the forces acting on the two particles
-   me->setForce( me->getForce() + mask*force); 
-   other->setForce( other->getForce() + mask*force*-1.0); 
+   me->setForce( me->getForce() + force); 
 
    return;
 }
@@ -113,14 +98,14 @@ void bondF(Particle *me, Particle *other) {
    // variables for the current position
    Vector3D r_i = me->getPos();
    Vector3D r_j = other->getPos();
-   float r_ij_dist = r_i.toroidal_dist(r_j, UNISIZE_D); // get the distance
-   Vector3D r_ij = r_i.toroidal_subtraction(r_j, UNISIZE_D, R_C);
+   float r_ij_dist = r_i.dist(r_j); // get the distance
+   Vector3D r_ij = r_i - r_j;
 
    // variables for the previous position
    Vector3D p_r_i = me->getPrevPos();
    Vector3D p_r_j = other->getPrevPos();
-   float p_r_ij_dist = p_r_i.toroidal_dist(p_r_j, UNISIZE_D);
-   Vector3D p_r_ij = p_r_i.toroidal_subtraction(p_r_j, UNISIZE_D, R_C);
+   float p_r_ij_dist = p_r_i.dist(p_r_j);
+   Vector3D p_r_ij = p_r_i - p_r_j;
 
    float U_r_ij = K_div_2 * (r_ij_dist - r_o)*(r_ij_dist - r_o); 
    float p_U_r_ij = K_div_2 * (p_r_ij_dist - r_o)*(p_r_ij_dist - r_o); 
@@ -132,14 +117,9 @@ void bondF(Particle *me, Particle *other) {
       b_force = r_ij * (-1.0/r_ij_dist) * ((U_r_ij - p_U_r_ij)/(r_ij_dist - p_r_ij_dist));  
    }
 
-   // mask for adjusting force values when crossing toroidal boundaries
-   Vector3D mask = r_i.direction_mask(r_j, UNISIZE_D, R_C);
-
    // update the force values
-   me->setForce( me->getForce() + mask*b_force);
-   other->setForce( other->getForce() + mask*b_force*-1.0); 
+   me->setForce( me->getForce() + b_force);
 }
-
 
 // Test program
 int main() {
@@ -158,62 +138,61 @@ int main() {
    const float mass_w = 1.0;
    const float mass_p = 1.0;
 
-   SimSystem universe(unisize, DELTA_T, R_C, 10, 0);
+   const unsigned num_cubes = 10;
+
+   SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
    
-   // Add lots of water
-   for(unsigned i=0; i<(n-(pLen*nP)); i++) {
-       Particle *w = new Particle(randPos(unisize), 0, mass_w, conF, dragF, randF);
-       //Particle *w = new Particle(rand2DPos(unisize), 0, mass_w, conF, dragF, randF);
-       universe.addParticle(w);
+   // add water
+   for(int w=0; w<1000; w++){
+       Particle *p = new Particle(randPos(unisize), 0, mass_w, conF, dragF, randF);
+       universe.addParticle(p);
    }
 
- 
-   for(unsigned i=0; i<nP; i++) { 
-       Vector3D offset(0.0,0.0,0.5);
-       // create a polymer
-       //Particle * p0 = new Particle(randPos(unisize/4), 1, mass_p, conF, dragF, randF);
-       //Particle * p0 = new Particle(Vector3D(0.1,0.1,0.1), 1, mass_p, conF, dragF, randF);
-       //Particle * p0 = new Particle(rand2DPos(unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p0 = new Particle(randPos(unisize/2) + unisize/2, 1, mass_p, conF, dragF, randF);
-       Particle * p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
-       Particle * p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF);
+   // add a polymer
+   // create the polymer at a random position
+   Vector3D offset(0.0,0.5,0.0); //how far apart each bond particle is initially placed
+   //Vector3D start = randPos(unisize);
+   Vector3D start(5.1,5.1,5.1);
+   Particle* p0 = new Particle(start, 1, mass_p, conF, dragF, randF); 
+   Particle* p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   //Particle* p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
 
-       // add the polymer particles to the universe
-       universe.addParticle(p0);
-       universe.addParticle(p1);
-       universe.addParticle(p2);
-       universe.addParticle(p3);
-       universe.addParticle(p4);
-       universe.addParticle(p5);
-       universe.addParticle(p6);
-       universe.addParticle(p7);
-       universe.addParticle(p8);
-       universe.addParticle(p9);
+   // add the polymer to the simulation universe
+   universe.addParticle(p0);
+   universe.addParticle(p1);
+   //universe.addParticle(p2);
+   //universe.addParticle(p3);
+   //universe.addParticle(p4);
+   //universe.addParticle(p5);
+   //universe.addParticle(p6);
+   //universe.addParticle(p7);
+   //universe.addParticle(p8);
+   //universe.addParticle(p9);
 
-       // bond the polymer particles together using the function bondF
-       universe.bond(p0, p1, bondF); 
-       universe.bond(p1, p2, bondF); 
-       universe.bond(p2, p3, bondF); 
-       universe.bond(p3, p4, bondF); 
-       universe.bond(p4, p5, bondF); 
-       universe.bond(p5, p6, bondF); 
-       universe.bond(p6, p7, bondF); 
-       universe.bond(p7, p8, bondF); 
-       universe.bond(p8, p9, bondF); 
-   } 
+   // add the bonds between the polymer links
+   universe.bond(p0,p1, bondF);
+   //universe.bond(p1,p2, bondF);
+   //universe.bond(p2,p3, bondF);
+   //universe.bond(p3,p4, bondF);
+   //universe.bond(p4,p5, bondF);
+   //universe.bond(p5,p6, bondF);
+   //universe.bond(p6,p7, bondF);
+   //universe.bond(p7,p8, bondF);
+   //universe.bond(p8,p9, bondF);
    
-   // emit the initial state (read by the web renderer interface)
-   universe.emitJSON("state.json");
 
    // run the universe on a single thread for many timesteps, emitting it's value every 0.07 seconds 
-   universe.seq_run(1000000000, 0.07);
+   universe.run(-1, 0.1);
+
+   // emit the initial state (read by the web renderer interface)
+   universe.emitJSONFromSU("state.json");
 
    std::cout << "done\n";
 }

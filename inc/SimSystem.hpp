@@ -45,7 +45,7 @@ class SimSystem {
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
-        void addParticle(Particle *p); /**< Add a particle to the system with a global position */
+        void addParticle(Particle *p); /**< Adds a particle to the system with a global position */
         void addLocalParticle(Particle *p); /**< Add a particle to the system with position relative to its spatial unti */
         //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */

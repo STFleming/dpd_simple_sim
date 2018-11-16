@@ -314,14 +314,25 @@ SimSystem::~SimSystem() {
 
 // allocates a particles to spatial processing units
 void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
-    for(iterator i=begin(), ie=end(); i!=ie; ++i){
-       SpatialUnit *cur = *i;
-       if(cur->checkPos(vec2pos(p->getPos()))) {
-          cur->addParticle(p);
-          return;
-       } 
-    }    
-    std::runtime_error("Could not find a SpatialUnit that could support the particle.\n");
+   
+    float cube_size = _N/_D;
+    spatial_unit_address_t su;
+    su.x = ceil(p->getPos().x()/cube_size) - 1;
+    su.y = ceil(p->getPos().y()/cube_size) - 1;
+    su.z = ceil(p->getPos().z()/cube_size) - 1;
+ 
+    Vector3D relative_pos;
+    relative_pos.x(p->getPos().x() - (su.x*cube_size));
+    relative_pos.y(p->getPos().y() - (su.y*cube_size));
+    relative_pos.z(p->getPos().z() - (su.z*cube_size));
+
+    // make the particle have a position relative to it's spatial unit
+    p->setPos(relative_pos);
+
+    SpatialUnit *sup = getSpatialUnit(su);
+
+    sup->addLocalParticle(p);
+
 }
 
 //! prints the number of particles allocated per spatial unit

@@ -8,7 +8,7 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.01 
+#define DELTA_T 0.02 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
@@ -25,7 +25,6 @@ void conF(Particle *me, Particle *other){
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
     float r_ij_dist = r_i.dist(r_j); // get the distance
-    //Vector3D r_ij = r_i - r_j; // vector between the points
     Vector3D r_ij = r_i - r_j;
  
     // Equation 8.5 in the dl_meso manual
@@ -44,7 +43,7 @@ void dragF(Particle *me, Particle *other) {
     const float r_c = R_C; // the interaction cutoff
     const float drag_coef = 4.5; // the drag coefficient (no idea what to set this at)
 
-   // // position and distance
+    // position and distance
     Vector3D r_i = me->getPos();
     Vector3D r_j = other->getPos();
     float r_ij_dist = r_i.dist(r_j); // get the distance
@@ -117,7 +116,7 @@ int main() {
    SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
 
    // add water
-   for(int w=0; w<600; w++){
+   for(int w=0; w<1000; w++){
        SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
        Particle *p = new Particle(randPos(cube_size), 0, mass_p0, conF, dragF, randF);
        s->addLocalParticle(p);
@@ -125,7 +124,7 @@ int main() {
    }
 
    // add orange oil 
-   for(int w=0; w<200; w++){
+   for(int w=0; w<300; w++){
        SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
        Particle *p = new Particle(randPos(cube_size), 1, mass_p0, conF, dragF, randF);
        s->addLocalParticle(p);
@@ -133,7 +132,7 @@ int main() {
    }
 
    // add green oil 
-   for(int w=0; w<200; w++){
+   for(int w=0; w<300; w++){
        SpatialUnit *s = universe.getSpatialUnit(rand_su(num_cubes));
        Particle *p = new Particle(randPos(cube_size), 2, mass_p0, conF, dragF, randF);
        s->addLocalParticle(p);
@@ -144,7 +143,7 @@ int main() {
    universe.emitJSONFromSU("state.json");
    
    // run the simulation universe for 10K timesteps 
-   universe.run(100000000000, 0.08);
+   universe.run(1000000000, 0.15);
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
