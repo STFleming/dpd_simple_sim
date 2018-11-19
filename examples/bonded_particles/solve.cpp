@@ -11,6 +11,8 @@
 
 const float A[2][2] = { {25.0, 25.0}, {25.0, 25.0}}; // interaction matrix
 
+// a global random number for dt10's hash based ran
+
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
 

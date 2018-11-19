@@ -314,17 +314,17 @@ SimSystem::~SimSystem() {
 
 // allocates a particles to spatial processing units
 void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
-   
+
     float cube_size = _N/_D;
     spatial_unit_address_t su;
-    su.x = ceil(p->getPos().x()/cube_size) - 1;
-    su.y = ceil(p->getPos().y()/cube_size) - 1;
-    su.z = ceil(p->getPos().z()/cube_size) - 1;
+    su.x = ceil(p->getPos().x()/cube_size);
+    su.y = ceil(p->getPos().y()/cube_size);
+    su.z = ceil(p->getPos().z()/cube_size);
  
     Vector3D relative_pos;
-    relative_pos.x(p->getPos().x() - (su.x*cube_size));
-    relative_pos.y(p->getPos().y() - (su.y*cube_size));
-    relative_pos.z(p->getPos().z() - (su.z*cube_size));
+    relative_pos.x( (su.x*cube_size) - p->getPos().x());
+    relative_pos.y( (su.y*cube_size) - p->getPos().y());
+    relative_pos.z( (su.z*cube_size) - p->getPos().z());
 
     // make the particle have a position relative to it's spatial unit
     p->setPos(relative_pos);
@@ -350,9 +350,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
  clock_t last_emit = clock();
  unsigned emit_cnt=0;
+ _grand = rand(); // get a new global random number 
 
  for(uint32_t t=0; t<period; t++) {
-     _grand = rand(); // get a new global random number 
 
      // for each spatial unit create their local view of the world based on their neighbours states
      for(iterator i=begin(); i!=end(); ++i) {
@@ -583,6 +583,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
      // update time
      _ts = _ts + 1;
      _t = _t + _dt;
+     _grand = rand();
+
+     //printf("next iteration: g_rand=%u, ts=%u\n", _grand, _ts);
 
    } // period has elapsed
 
