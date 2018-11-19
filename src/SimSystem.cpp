@@ -317,14 +317,14 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 
     float cube_size = _N/_D;
     spatial_unit_address_t su;
-    su.x = ceil(p->getPos().x()/cube_size);
-    su.y = ceil(p->getPos().y()/cube_size);
-    su.z = ceil(p->getPos().z()/cube_size);
+    su.x = floor(p->getPos().x()/cube_size);
+    su.y = floor(p->getPos().y()/cube_size);
+    su.z = floor(p->getPos().z()/cube_size);
  
     Vector3D relative_pos;
-    relative_pos.x( (su.x*cube_size) - p->getPos().x());
-    relative_pos.y( (su.y*cube_size) - p->getPos().y());
-    relative_pos.z( (su.z*cube_size) - p->getPos().z());
+    relative_pos.x(p->getPos().x() - (su.x*cube_size));
+    relative_pos.y(p->getPos().y() - (su.y*cube_size));
+    relative_pos.z(p->getPos().z() - (su.z*cube_size));
 
     // make the particle have a position relative to it's spatial unit
     p->setPos(relative_pos);
@@ -375,6 +375,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
                       if( (bond1 == p2) || (bond2 == p1) ) { // these particles are bonded 
                          p1->callBond();
                       }  
+                   } else {
                    }
                } 
              }
@@ -388,6 +389,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
             // calculate the relative position offsets for this neighbour
             spatial_unit_address_t n_addr = neighbour->getAddr();
             spatial_unit_address_t this_addr = s->getAddr(); // we need wraparound for this
+
+            // debug
+            //if(neighbour->numBeads() >= 1)
 
             // get relative positions from the abs spatial unit addresses
             int x_rel = n_addr.x - this_addr.x;
@@ -440,8 +444,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
                           this_p->callBond();
                        }  
 
-                  } 
-
+                  } else { 
+                  }
+                  
               }
               fp->setPos(fp_pos); // restore the position
             }

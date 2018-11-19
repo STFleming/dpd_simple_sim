@@ -8,8 +8,9 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.02 
-#define UNISIZE_D 10.0 // the size of a single dimension of the universe
+#define DELTA_T 0.001 
+//#define DELTA_T 0.001 
+#define UNISIZE_D 14.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
 const float A[3][3] = { {25.0, 75.0, 35.0}, 
@@ -33,7 +34,7 @@ void conF(Particle *me, Particle *other){
     assert(r_ij_dist <= R_C);
 
     // update the forces acting on the two particles
-    //me->setForce( me->getForce() + force); 
+    me->setForce( me->getForce() + force); 
     return;
 }
 
@@ -60,7 +61,8 @@ void dragF(Particle *me, Particle *other) {
     Vector3D force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (-1.0 * drag_coef); 
 
     // update the forces acting on the two particles
-    //me->setForce( me->getForce() + force); 
+    me->setForce( me->getForce() + force); 
+    //printf("p:%d dragF new force=%s\n", me->getID(), me->getForce().str().c_str());
     return;
 }
 
@@ -69,7 +71,7 @@ uint32_t pairwise_rand(uint32_t grand, uint32_t pid1, uint32_t pid2){
     uint32_t la=std::min(pid1, pid2);
     uint32_t lb=std::max(pid1, pid2);
     uint32_t s0 = (pid1 ^ grand)*pid2;
-    uint32_t s1 = (pid2*grand)^pid1;
+    uint32_t s1 = (pid2 ^ grand)*pid1;
     return s0 + s1;
 }
 
@@ -92,13 +94,16 @@ void randF(uint32_t grand, Particle *me, Particle *other) {
    float w_r = (1.0 - r_ij_dist/r_c);
       
    // random number generation
-   float r = (pairwise_rand(grand, me->getID(), other->getID()) / (float)RAND_MAX * 1.0);
+   float r = ((pairwise_rand(grand, me->getID(), other->getID()) / (float)(RAND_MAX)) * 0.5);
 
    // force calculation
    Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
 
+   //printf("p:%d <-> p:%d  r=%u   f=%s\n", me->getID(), other->getID(), pairwise_rand(grand, me->getID(), other->getID()), force.str().c_str()); 
+
    // update the forces acting on the two particles
-   me->setForce( me->getForce() + force); 
+   me->setForce( me->getForce() + force*-1.0); 
+   //printf("p:%d randF new force=%s\n", me->getID(), me->getForce().str().c_str());
    return;
 }
 
@@ -107,39 +112,44 @@ int main() {
    // size of the universe
    const float unisize = UNISIZE_D;
 
-   // number of particles (beads) in the universe
-   const unsigned w = 1000;
-
    // mass of the particles
    const float mass_p0 = 1.0;
 
-   const unsigned num_cubes = 10;
+   const unsigned num_cubes = 4;
    const float cube_size = unisize/num_cubes;
 
    SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
 
+   Particle *p0 = new Particle(Vector3D(9.9,0.0,0.0), 0, mass_p0, conF, dragF, randF);
+   //Particle *p1 = new Particle(p0->getPos() + Vector3D(0.25,0.0,0.0), 0, mass_p0, conF, dragF, randF);
+   Particle *p1 = new Particle(Vector3D(0.1,0.0,0.0), 0, mass_p0, conF, dragF, randF);
+   Particle *p2 = new Particle(Vector3D(5.0,0.25,0.0), 0, mass_p0, conF, dragF, randF);
+   universe.addParticle(p0);
+   universe.addParticle(p1);
+   universe.addParticle(p2);
+   
    // add water
-   for(int w=0; w<600; w++){
-       Particle *p = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
+   for(int w=0; w<150; w++){
+       Particle *p = new Particle(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // add orange oil 
-   for(int w=0; w<300; w++){
-       Particle *p = new Particle(randPos(unisize), 1, mass_p0, conF, dragF, randF);
+   for(int o_o=0; o_o<100; o_o++){
+       Particle *p = new Particle(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // add green oil 
-   for(int w=0; w<100; w++){
-       Particle *p = new Particle(randPos(unisize), 2, mass_p0, conF, dragF, randF);
+   for(int g_o=0; g_o<100; g_o++){
+       Particle *p = new Particle(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
    
-   // run the simulation universe for 10K timesteps 
+   // run the simulation universe for some timesteps 
    universe.run(-1, 0.15);
 
    // emit the state of the simulation
