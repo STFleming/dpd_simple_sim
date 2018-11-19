@@ -208,12 +208,8 @@ SpatialUnit * SimSystem::getSpatialUnit(spatial_unit_address_t x) {
 
 // bonds particle i to particle j in the universe 
 void SimSystem::bond(Particle *i, Particle *j, std::function<void(Particle *me, Particle *other)> bondf){
-    assert(!i->isBonded());
-    i->setBond(j, bondf);
-    if(i->getPos().toroidal_dist(j->getPos(), _N) >= _r_c){
-         printf("Error: particle %d (%s) and %d (%s) are too far away (dist=%.2f) to be bonded\n", i->getID(), i->getPos().str().c_str(), j->getID(), j->getPos().str().c_str(), i->getPos().toroidal_dist(j->getPos(), _N));
-         exit(EXIT_FAILURE);
-    } 
+    i->setOutBond(j, bondf);
+    j->setInBond(i, bondf);
     return;
 }
 
@@ -328,6 +324,7 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
 
     // make the particle have a position relative to it's spatial unit
     p->setPos(relative_pos);
+    p->setPrevPos(relative_pos);
 
     SpatialUnit *sup = getSpatialUnit(su);
 
@@ -370,13 +367,20 @@ void SimSystem::run(uint32_t period, float emitrate) {
                       p1->callDrag(p2);
                       p1->callRandom(_grand, p2);
 
-                      Particle *bond1 = p1->getBondedParticle();
-                      Particle *bond2 = p2->getBondedParticle();
-                      if( (bond1 == p2) || (bond2 == p1) ) { // these particles are bonded 
-                         p1->callBond();
-                      }  
-                   } else {
-                   }
+                      // check to see if this bead is the Out Bond
+                      Particle *outBond = p1->getOutBondBead();
+                      if(outBond == p2) {
+                        p1->callBond();
+                      }                       
+ 
+                      // check to see we are the In Bond bead for the foreign particle fp
+                      Particle *inBond = p1->getInBondBead();
+                      if(inBond == p2){
+                         p2->callInverseBond();
+                      }
+
+
+                   } 
                } 
              }
           }
@@ -426,6 +430,12 @@ void SimSystem::run(uint32_t period, float emitrate) {
                Vector3D fp_pos = fp->getPos();
                Vector3D n_fp_pos(fp_pos.x() + x_off, fp_pos.y() + y_off, fp_pos.z() + z_off);
                fp->setPos(n_fp_pos); 
+ 
+               // also do the same thing for it's previous position
+               Vector3D fp_prev_pos = fp->getPrevPos();
+               Vector3D n_pfp_pos(fp_prev_pos.x() + x_off, fp_prev_pos.y() + y_off, fp_prev_pos.z() + z_off);
+               fp->setPrevPos(n_pfp_pos); 
+               
                 
                // loop over all our particles and apply the forces and update
                for(SpatialUnit::iterator this_pi = s->begin(); this_pi != s->end(); ++this_pi){
@@ -437,18 +447,25 @@ void SimSystem::run(uint32_t period, float emitrate) {
                        this_p->callConservative(fp);
                        this_p->callDrag(fp);
                        this_p->callRandom(_grand, fp);
-
-                       Particle *bond1 = fp->getBondedParticle();
-                       Particle *bond2 = this_p->getBondedParticle();
-                       if( (bond1 == this_p) || (bond2 == fp) ) { // these particles are bonded 
-                          this_p->callBond();
-                       }  
+                        
+                       // check to see if this bead is the Out Bond
+                       Particle *outBond = this_p->getOutBondBead();
+                       if(outBond == fp) {
+                         this_p->callBond();
+                       }                       
+ 
+                       // check to see we are the In Bond bead for the foreign particle fp
+                       Particle *inBond = this_p->getInBondBead();
+                       if(inBond == fp){
+                          fp->callInverseBond();
+                       }
 
                   } else { 
                   }
                   
               }
               fp->setPos(fp_pos); // restore the position
+              fp->setPrevPos(fp_prev_pos); // restore the position
             }
          }
      }
@@ -548,6 +565,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
               }
 
               // update the position
+              p->setPrevPos(p->getPos());
               p->setPos(point); 
 
               // clear force 

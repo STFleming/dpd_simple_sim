@@ -5,13 +5,12 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.02 
+//#define DELTA_T 0.02 
+#define DELTA_T 0.01 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
 const float A[2][2] = { {25.0, 25.0}, {25.0, 25.0}}; // interaction matrix
-
-// a global random number for dt10's hash based ran
 
 // conservative pairwise force declaration
 void conF(Particle *me, Particle *other){
@@ -27,10 +26,8 @@ void conF(Particle *me, Particle *other){
     // Equation 8.5 in the dl_meso manual
     Vector3D force = (r_ij/r_ij_dist) * (a_ij * (1.0 - (r_ij_dist/r_c)));
 
-    assert(r_ij_dist <= R_C);
-
     // update the forces acting on the two particles
-    me->setForce( me->getForce() + force); 
+    //me->setForce( me->getForce() + force); 
 
     return;
 }
@@ -62,14 +59,24 @@ void dragF(Particle *me, Particle *other) {
 
     return;
 }
+ 
+
+// dt10's hash based random num gen
+uint32_t pairwise_rand(uint32_t grand, uint32_t pid1, uint32_t pid2){
+    uint32_t la=std::min(pid1, pid2);
+    uint32_t lb=std::max(pid1, pid2);
+    uint32_t s0 = (pid1 ^ grand)*pid2;
+    uint32_t s1 = (pid2 ^ grand)*pid1;
+    return s0 + s1;
+}
 
 // random pairwise force declaration
-void randF(Particle *me, Particle *other) {
+void randF(uint32_t grand, Particle *me, Particle *other) {
 
    const float K_BT = 1.0;
    const float drag_coef = 4.5; // the drag coefficient (no idea what to set this at)
    const float sigma_ij = sqrt(2*drag_coef*K_BT); // the temperature coef
-   const float dt = DELTA_T; 
+   const float dt = DELTA_T;
    const float r_c = R_C; // the interaction cutoff
 
    // position and distance
@@ -80,16 +87,19 @@ void randF(Particle *me, Particle *other) {
 
    // switching function
    float w_r = (1.0 - r_ij_dist/r_c);
-      
+
+   // random number generation
+   float r = ((pairwise_rand(grand, me->getID(), other->getID()) / (float)(RAND_MAX)) * 0.5);
+
    // force calculation
-   float r = (rand() / (float)RAND_MAX * 1.0);
-   Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
+   Vector3D force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;
+
+   //printf("p:%d <-> p:%d  r=%u   f=%s\n", me->getID(), other->getID(), pairwise_rand(grand, me->getID(), other->getID()), force.str().c_str()); 
 
    // update the forces acting on the two particles
-   me->setForce( me->getForce() + force); 
-
-   return;
+   me->setForce( me->getForce() + force*-1.0);
 }
+
 
 // this is a hookean harmonic bond 
 void bondF(Particle *me, Particle *other) {
@@ -123,6 +133,23 @@ void bondF(Particle *me, Particle *other) {
    me->setForce( me->getForce() + b_force);
 }
 
+// returns a safe random position that will not break a polymer bond
+Vector3D safe_water_pos(std::vector<Particle *> polymer_beads, float unisize){
+    bool safe=false;
+    Vector3D w_pos;
+    while(!safe) {
+      safe = true;
+      w_pos = rand2DPos(unisize);
+      for(auto i=polymer_beads.begin(); i!=polymer_beads.end(); ++i){
+          Particle* p = *i;
+          if(p->getPos().dist(w_pos) <= 0.75) {
+             safe = false;
+          }  
+      }
+    }
+    return w_pos; 
+}
+
 // Test program
 int main() {
    // size of the universe
@@ -144,51 +171,66 @@ int main() {
 
    SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
    
-   // add water
-   for(int w=0; w<1000; w++){
-       Particle *p = new Particle(randPos(unisize), 0, mass_w, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   std::vector<Particle *> polymer_beads;
 
    // add a polymer
    // create the polymer at a random position
    Vector3D offset(0.0,0.5,0.0); //how far apart each bond particle is initially placed
    //Vector3D start = randPos(unisize);
-   Vector3D start(5.1,5.1,5.1);
+   Vector3D start(5.0,5.0,0.0);
    Particle* p0 = new Particle(start, 1, mass_p, conF, dragF, randF); 
    Particle* p1 = new Particle(p0->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
-   //Particle* p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p2 = new Particle(p1->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p3 = new Particle(p2->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p4 = new Particle(p3->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p5 = new Particle(p4->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p6 = new Particle(p5->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p7 = new Particle(p6->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p8 = new Particle(p7->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+   Particle* p9 = new Particle(p8->getPos().modulo_add(offset, unisize), 1, mass_p, conF, dragF, randF); 
+
+   // keep a list of polymer beads to make sure we don't place a water bead between bonds
+   polymer_beads.push_back(p0);
+   polymer_beads.push_back(p1);
+   polymer_beads.push_back(p2);
+   polymer_beads.push_back(p3);
+   polymer_beads.push_back(p4);
+   polymer_beads.push_back(p5);
+   polymer_beads.push_back(p6);
+   polymer_beads.push_back(p7);
+   polymer_beads.push_back(p8);
+   polymer_beads.push_back(p9);
 
    // add the polymer to the simulation universe
    universe.addParticle(p0);
    universe.addParticle(p1);
-   //universe.addParticle(p2);
-   //universe.addParticle(p3);
-   //universe.addParticle(p4);
-   //universe.addParticle(p5);
-   //universe.addParticle(p6);
-   //universe.addParticle(p7);
-   //universe.addParticle(p8);
-   //universe.addParticle(p9);
+   universe.addParticle(p2);
+   universe.addParticle(p3);
+   universe.addParticle(p4);
+   universe.addParticle(p5);
+   universe.addParticle(p6);
+   universe.addParticle(p7);
+   universe.addParticle(p8);
+   universe.addParticle(p9);
 
    // add the bonds between the polymer links
    universe.bond(p0,p1, bondF);
-   //universe.bond(p1,p2, bondF);
-   //universe.bond(p2,p3, bondF);
-   //universe.bond(p3,p4, bondF);
-   //universe.bond(p4,p5, bondF);
-   //universe.bond(p5,p6, bondF);
-   //universe.bond(p6,p7, bondF);
-   //universe.bond(p7,p8, bondF);
-   //universe.bond(p8,p9, bondF);
+   universe.bond(p1,p2, bondF);
+   universe.bond(p2,p3, bondF);
+   universe.bond(p3,p4, bondF);
+   universe.bond(p4,p5, bondF);
+   universe.bond(p5,p6, bondF);
+   universe.bond(p6,p7, bondF);
+   universe.bond(p7,p8, bondF);
+   universe.bond(p8,p9, bondF);
    
+
+   // add water
+   for(int w=0; w<100; w++){
+       // we want to add water, but not in between a polymer bond
+       Particle *p = new Particle(safe_water_pos(polymer_beads, unisize), 0, mass_w, conF, dragF, randF);
+       universe.addParticle(p);
+   }
 
    // run the universe on a single thread for many timesteps, emitting it's value every 0.07 seconds 
    universe.run(-1, 0.1);

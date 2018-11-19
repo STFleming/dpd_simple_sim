@@ -12,7 +12,8 @@ Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(P
 
    // by default particles are not bonded to any other particle
    _isBonded = false;
-   _bondParticle = NULL; // the particle that this could be bonded to
+   _inBond = NULL; // the particle that this could be bonded to
+   _outBond = NULL; // the particle that this could be bonded to
    _bond = NULL; // the force function that is called between the bonds
 
    // assign the force functions
@@ -29,19 +30,31 @@ Particle::~Particle() {
 bool Particle::isBonded() { return _isBonded;}
 
 // used to set the particle this should be bonded to
-void Particle::setBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
+void Particle::setInBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
     _isBonded = true;
-    _bondParticle = p;
+    _inBond = p;
+    _bond = bondf;  
+}
+
+// used to set the particle this should be bonded to
+void Particle::setOutBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
+    _isBonded = true;
+    _outBond = p;
     _bond = bondf;  
 }
 
 // returns the pointer to the particle that this is bonded to
-Particle * Particle::getBondedParticle(){ return _bondParticle; }
+Particle * Particle::getInBondBead(){ return _inBond; }
+Particle * Particle::getOutBondBead(){ return _outBond; }
 
 // sets a new position for this particle
 void Particle::setPos(Vector3D npos) {
-    _prev_pos = _pos;
     _pos = npos;
+}
+
+// sets a new previous position for this particle
+void Particle::setPrevPos(Vector3D npos) {
+    _prev_pos = npos;
 }
 
 // gets the current position of the particle
@@ -113,6 +126,13 @@ void Particle::callRandom(uint32_t grand, Particle *other) {
 // calls the bond force function
 void Particle::callBond() {
     if(_isBonded){
-      _bond(this, getBondedParticle());
+      _bond(this, getOutBondBead());
     }
+}
+
+// calls the bond force function from the other way around
+void Particle::callInverseBond() {
+   if(_isBonded) {
+      _bond(getOutBondBead(), this);
+   }
 }
