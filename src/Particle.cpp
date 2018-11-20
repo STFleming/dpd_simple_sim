@@ -5,13 +5,13 @@
 
 // constructor (sets the initial position of the particle)
 template<class S>
-Particle<S>::Particle(Vector3D pos, uint32_t type, S mass, std::function<void(Particle<S> *me, Particle<S> *other)> conservative, std::function<void(Particle<S> *me, Particle<S> *other)> drag, std::function<void(uint32_t grand, Particle<S> *me, Particle<S> *other)> random) {
+Particle<S>::Particle(Vector3D<S> pos, uint32_t type, S mass, std::function<void(Particle<S> *me, Particle<S> *other)> conservative, std::function<void(Particle<S> *me, Particle<S> *other)> drag, std::function<void(uint32_t grand, Particle<S> *me, Particle<S> *other)> random) {
    _pos = pos;
-   _prev_pos = pos+0.0001; // small addition to avoid initial condition problems
-   _velocity = Vector3D(0.0, 0.0, 0.0);
+   _prev_pos = pos+S(0.01); // small addition to avoid initial condition problems
+   _velocity = Vector3D<S>(S(0.0), S(0.0), S(0.0));
    _mass = mass;
    _id = 0xFFFFFFFF;
-   _force = Vector3D(0.0, 0.0, 0.0);
+   _force = Vector3D<S>(S(0.0), S(0.0), S(0.0));
    _type = type;
 
    // by default particles are not bonded to any other particle
@@ -59,38 +59,38 @@ Particle<S> * Particle<S>::getOutBondBead(){ return _outBond; }
 
 // sets a new position for this particle
 template<class S>
-void Particle<S>::setPos(Vector3D npos) {
+void Particle<S>::setPos(Vector3D<S> npos) {
     _pos = npos;
 }
 
 // sets a new previous position for this particle
 template<class S>
-void Particle<S>::setPrevPos(Vector3D npos) {
+void Particle<S>::setPrevPos(Vector3D<S> npos) {
     _prev_pos = npos;
 }
 
 // gets the current position of the particle
 template<class S>
-Vector3D Particle<S>::getPos(){
+Vector3D<S> Particle<S>::getPos(){
    return _pos; 
 }
 
 // gets the prev position of the particle
 template<class S>
-Vector3D Particle<S>::getPrevPos(){
+Vector3D<S> Particle<S>::getPrevPos(){
    return _prev_pos; 
 }
 
 
 // gets the velocity for the particle
 template<class S>
-Vector3D Particle<S>::getVelo() {
+Vector3D<S> Particle<S>::getVelo() {
     return _velocity;
 }
 
 // sets the velocity of this particle
 template<class S>
-void Particle<S>::setVelo(Vector3D velo) {
+void Particle<S>::setVelo(Vector3D<S> velo) {
     _velocity = velo;
 }
 
@@ -121,12 +121,12 @@ void Particle<S>::setID(uint32_t id) {
 
 // getters and setters for the force of this particle
 template<class S>
-void Particle<S>::setForce(Vector3D force) {
+void Particle<S>::setForce(Vector3D<S> force) {
     _force = force;
 }
 
 template<class S>
-Vector3D Particle<S>::getForce(void) {
+Vector3D<S> Particle<S>::getForce(void) {
     return _force;
 }
 

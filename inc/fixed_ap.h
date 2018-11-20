@@ -23,6 +23,7 @@ class fixap
         constexpr explicit fixap(double x) : _value(round(x * (1 << F))) { }
 
         // constructors
+        fixap() : _value(0) {}
         fixap(uint8_t x)  : _value(x) {}
         fixap(uint16_t x) : _value(x) {}
         fixap(uint32_t x) : _value(x) {}
@@ -32,6 +33,11 @@ class fixap
         fixap(int32_t x) : _value(x) {}
         fixap(int64_t x) : _value(x) {}
       
+        // double assignment operator
+        fixap<C,F>& operator =(const double x) { 
+           _value = round(x * (1 << F)); 
+        }
+
         // sets the fixed point variable from a floating point value (at compile time)
         constexpr void set(float x){
            _value = round(x * (1 << F));
@@ -161,5 +167,10 @@ class fixap
         }
 
 };
+
+template<class C, unsigned F> 
+fixap<C,F> sqrt(fixap<C,F> in){
+    return in.sqrt(10); // newton raphson 10 iterations default
+}
 
 #endif /* _FIX_AP_H */

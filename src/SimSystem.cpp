@@ -22,20 +22,16 @@ SimSystem<S>::SimSystem(S N, S dt, S r_c, unsigned D, unsigned verbosity) {
     }
 
     // calculate the size of each spatial unit
-    _unit_size = _N / (float)D;
+    _unit_size = _N / S(D);
 
     // create the list of _cubes
     _cubes = new std::vector<SpatialUnit<S> *>(); 
     for(int x=0; x<_D; x++) {
         for(int y=0; y<_D; y++) {
             for(int z=0; z<_D; z++) {
-                S fpx = (float)x * _unit_size;
-                S fpy = (float)y * _unit_size;
-                S fpz = (float)z * _unit_size;
-
-                // create a SpatialUnit and add it to the cubes
-                if(_verbosity >= 3)
-                    printf("Constructing a cube (size=%f) at x:%f, y:%f, z:%f\n", _unit_size, fpx, fpy, fpz);
+                S fpx = S(x * _unit_size);
+                S fpy = S(y * _unit_size);
+                S fpz = S(z * _unit_size);
 
                 spatial_unit_address_t c_addr = {x,y,z};
                 _cubes->push_back(new SpatialUnit<S>(_unit_size,fpx,fpy,fpz,c_addr, _verbosity)); // Add a new cube of size _N/_D at x,y,z
@@ -236,9 +232,9 @@ void SimSystem<S>::emitJSONFromSU(std::string jsonfile) {
         // iterate through all particles of this spatial unit
         for(auto ip=s->begin(); ip!=s->end(); ++ip){
            Particle<S> *cp = *ip;
-           float cp_x = cp->getPos().x() + x_off;
-           float cp_y = cp->getPos().y() + y_off;
-           float cp_z = cp->getPos().z() + z_off;
+           float cp_x = (float)(cp->getPos().x() + S(x_off));
+           float cp_y = (float)(cp->getPos().y() + S(y_off));
+           float cp_z = (float)(cp->getPos().z() + S(z_off));
 
            // check to make sure that the particle position makes sense
            if (!isnan(cp_x) && !isnan(cp_y) && !isnan(cp_z)) {
@@ -306,8 +302,6 @@ template<class S>
 SimSystem<S>::~SimSystem() {
     for(iterator i=begin(), e=end(); i!=e; ++i){
         SpatialUnit<S> *cur = *i;
-        if(_verbosity>=4)
-            printf("removing cube (size=%f) at x:%f, y:%f, z:%f\n", cur->getSize(), cur->getPos().x, cur->getPos().y, cur->getPos().z);
         delete cur;
     }  
     delete _cubes;
@@ -318,16 +312,16 @@ SimSystem<S>::~SimSystem() {
 template<class S>
 void SimSystem<S>::allocateParticleToSpatialUnit(Particle<S> *p) {
 
-    S cube_size = _N/_D;
+    S cube_size = S((float)_N/_D);
     spatial_unit_address_t su;
     su.x = floor(p->getPos().x()/cube_size);
     su.y = floor(p->getPos().y()/cube_size);
     su.z = floor(p->getPos().z()/cube_size);
  
-    Vector3D relative_pos;
-    relative_pos.x(p->getPos().x() - (su.x*cube_size));
-    relative_pos.y(p->getPos().y() - (su.y*cube_size));
-    relative_pos.z(p->getPos().z() - (su.z*cube_size));
+    Vector3D<S> relative_pos;
+    relative_pos.x(p->getPos().x() - (S(float(su.x))*cube_size));
+    relative_pos.y(p->getPos().y() - (S(float(su.y))*cube_size));
+    relative_pos.z(p->getPos().z() - (S(float(su.z))*cube_size));
 
     // make the particle have a position relative to it's spatial unit
     p->setPos(relative_pos);
@@ -424,21 +418,21 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
                   z_rel = 1;
                    
 
-            S x_off = (float)(x_rel)*neighbour->getSize();
-            S y_off = (float)(y_rel)*neighbour->getSize();
-            S z_off = (float)(z_rel)*neighbour->getSize();
+            S x_off = S(x_rel)*neighbour->getSize();
+            S y_off = S(y_rel)*neighbour->getSize();
+            S z_off = S(z_rel)*neighbour->getSize();
 
             // loop over all the particles in this neighbour and apply the forces to our particles
             for(auto np=neighbour->begin(); np!=neighbour->end(); ++np){
               // move the position of this particle to be relative to our own (we will need to restore it once we are done) 
                Particle<S> *fp = *np;
-               Vector3D fp_pos = fp->getPos();
-               Vector3D n_fp_pos(fp_pos.x() + x_off, fp_pos.y() + y_off, fp_pos.z() + z_off);
+               Vector3D<S> fp_pos = fp->getPos();
+               Vector3D<S> n_fp_pos(fp_pos.x() + x_off, fp_pos.y() + y_off, fp_pos.z() + z_off);
                fp->setPos(n_fp_pos); 
  
                // also do the same thing for it's previous position
-               Vector3D fp_prev_pos = fp->getPrevPos();
-               Vector3D n_pfp_pos(fp_prev_pos.x() + x_off, fp_prev_pos.y() + y_off, fp_prev_pos.z() + z_off);
+               Vector3D<S> fp_prev_pos = fp->getPrevPos();
+               Vector3D<S> n_pfp_pos(fp_prev_pos.x() + x_off, fp_prev_pos.y() + y_off, fp_prev_pos.z() + z_off);
                fp->setPrevPos(n_pfp_pos); 
                
                 
@@ -486,9 +480,9 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
          std::vector<Particle<S> *> tmp_su_particles = su->copyOfParticles();
          for(auto i=tmp_su_particles.begin(), ie=tmp_su_particles.end(); i!=ie; ++i) {
               Particle<S> *p = *i;
-              float mass = p->getMass();
-              Vector3D acceleration = p->getForce()/mass;
-              Vector3D delta_v = (p->getForce()/mass) * _dt;
+              S mass = p->getMass();
+              Vector3D<S> acceleration = p->getForce()/mass;
+              Vector3D<S> delta_v = (p->getForce()/mass) * _dt;
               // update velocity
               p->setVelo(p->getVelo() + delta_v); 
               //p->setVelo(Vector3D(0.1,0.1,0.1)); 
@@ -497,7 +491,7 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
               //Vector3D point = p->getPos() +p->getVelo()*_dt;
 
               // velocity verlet
-              Vector3D point = p->getPos() + p->getVelo()*_dt + acceleration*0.5*_dt*_dt; 
+              Vector3D<S> point = p->getPos() + p->getVelo()*_dt + acceleration*S(0.5)*_dt*_dt; 
 
               // here we need to check for migration
               spatial_unit_address_t dest; // the spatial unit where we might be potentially sending this particle
@@ -574,7 +568,7 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
               p->setPos(point); 
 
               // clear force 
-              p->setForce(Vector3D(0.0, 0.0, 0.0));
+              p->setForce(Vector3D<S>(S(0.0), S(0.0), S(0.0)));
          }
      }
 

@@ -74,7 +74,7 @@ void SpatialUnit<S>::addParticle(Particle<S>* p) {
 template<class S>
 void SpatialUnit<S>::addLocalParticle(Particle<S> *p){
      // check to make sure the position is local  
-     Vector3D p_pos = p->getPos();
+     Vector3D<S> p_pos = p->getPos();
 
      if( ( p_pos.x() < 0 ) || (p_pos.x() > _size) ){
          printf("Error adding particle p(%d): the x dimension for this particle is not local:%s\n", p->getID(), p_pos.str().c_str());
