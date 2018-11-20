@@ -34,8 +34,8 @@ class fixap
         fixap(int64_t x) : _value(x) {}
       
         // double assignment operator
-        fixap<C,F>& operator =(const double x) { 
-           _value = round(x * (1 << F)); 
+        fixap<C,F>& operator =(const double x) {
+           _value = round(x * (1 << F));
         }
 
         // sets the fixed point variable from a floating point value (at compile time)
@@ -60,6 +60,22 @@ class fixap
               return fixap<C,F>(_value >> 1);
         }
         
+        // comparisons
+        bool operator < (fixap<C,F> const& a) 
+        { return this->_value < a._value; }
+
+        bool operator > (fixap<C,F> const& a) 
+        { return this->_value > a._value; }
+
+        bool operator == (fixap<C,F> const& a) 
+        { return this->_value == a._value; }
+
+        bool operator >= (fixap<C,F> const& a) 
+        { return this->_value >= a._value; }
+
+        bool operator <= (fixap<C,F> const& a) 
+        { return this->_value <= a._value; }
+
         // multiplication
         // uint8_t
         fixap<uint8_t,F> operator *(fixap<uint8_t,F> const& a){
@@ -168,9 +184,54 @@ class fixap
 
 };
 
-template<class C, unsigned F> 
-fixap<C,F> sqrt(fixap<C,F> in){
-    return in.sqrt(10); // newton raphson 10 iterations default
+// conversion functions
+template<unsigned F>
+fixap<uint64_t,F> to_unsigned(fixap<int64_t, F> x) { return fixap<uint64_t,F>((uint64_t)x.get()); }
+template<unsigned F>
+fixap<uint32_t,F> to_unsigned(fixap<int32_t, F> x) { return fixap<uint32_t,F>((uint32_t)x.get()); }
+template<unsigned F>
+fixap<uint16_t,F> to_unsigned(fixap<int16_t, F> x) { return fixap<uint16_t,F>((uint16_t)x.get()); }
+template<unsigned F>
+fixap<uint8_t,F> to_unsigned(fixap<int8_t, F> x) { return fixap<uint8_t,F>((uint8_t)x.get()); }
+
+template<unsigned F>
+fixap<int64_t,F> to_signed(fixap<uint64_t, F> x) { return fixap<int64_t,F>((int64_t)x.get()); }
+template<unsigned F>
+fixap<int32_t,F> to_signed(fixap<uint32_t, F> x) { return fixap<int32_t,F>((int32_t)x.get()); }
+template<unsigned F>
+fixap<int16_t,F> to_signed(fixap<uint16_t, F> x) { return fixap<int16_t,F>((int16_t)x.get()); }
+template<unsigned F>
+fixap<int8_t,F> to_signed(fixap<uint8_t, F> x) { return fixap<int8_t,F>((int8_t)x.get()); }
+
+
+// sqrt functions
+template<unsigned F>
+fixap<int64_t, F> sqrt(fixap<int64_t, F> in) {
+    fixap<uint64_t, F> t = to_unsigned(in);
+    return to_signed(t.sqrt(30));
 }
+
+template<unsigned F>
+fixap<int32_t, F> sqrt(fixap<int32_t, F> in) {
+    fixap<uint32_t, F> t = to_unsigned(in);
+    return to_signed(t.sqrt(30));
+}
+
+template<unsigned F>
+fixap<int16_t, F> sqrt(fixap<int16_t, F> in) {
+    fixap<uint16_t, F> t = to_unsigned(in);
+    return to_signed(t.sqrt(30));
+}
+
+template<unsigned F>
+fixap<int8_t, F> sqrt(fixap<int8_t, F> in) {
+    fixap<uint8_t, F> t = to_unsigned(in);
+    return to_signed(t.sqrt(30));
+}
+
+//template<class C, unsigned F>
+//fixap<C,F> sqrt(fixap<C,F> in){
+//    return in.sqrt(40); // newton raphson 30 iterations default
+//}
 
 #endif /* _FIX_AP_H */

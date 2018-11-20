@@ -17,12 +17,12 @@ SimSystem<S>::SimSystem(S N, S dt, S r_c, unsigned D, unsigned verbosity) {
     // create the global list of particles
     _particles = new std::vector<Particle<S> *>();
 
-    if(_N == 0) { // cannot have a problem with no size
+    if(_N == S(0.0)) { // cannot have a problem with no size
        std::runtime_error("Problem must have a size >0\n");
     }
 
     // calculate the size of each spatial unit
-    _unit_size = _N / S(D);
+    _unit_size = _N / S(float(D));
 
     // create the list of _cubes
     _cubes = new std::vector<SpatialUnit<S> *>(); 
@@ -353,18 +353,24 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
  _grand = rand(); // get a new global random number 
 
  for(uint32_t t=0; t<period; t++) {
-
+ 
+     printf("starting iteration(%d)\n", t);
+     
      // for each spatial unit create their local view of the world based on their neighbours states
      for(iterator i=begin(); i!=end(); ++i) {
          SpatialUnit<S> *s = *i; // the current spatial unit
 
+         printf("SU<%d,%d,%d>\n", s->getAddr().x, s->getAddr().y, s->getAddr().z); 
+ 
          // iterate over itself and apply the forces to it's internal particles
          for(auto csu_p1=s->begin(); csu_p1 !=s->end(); ++csu_p1){
              Particle<S> *p1 = *csu_p1;
              for(auto csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
                Particle<S> *p2 = *csu_p2;
                if(p1->getID() != p2->getID()) {
+                  printf("\tlocal bead interation B:%d <-> B:%d\n", p1->getID(), p2->getID());
                   if(p1->getPos().dist(p2->getPos()) <= _r_c){
+                      printf("\t\tin range\n");
                       // do the force update
                       p1->callConservative(p2);
                       p1->callDrag(p2);
@@ -506,7 +512,7 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
                  else
                      dest.x = curr_addr.x + 1; 
                  point.x(point.x() - su->getSize());
-              } else if (point.x() < 0.0) {
+              } else if (point.x() < S(0.0)) {
                  migrating = true;
                  if(curr_addr.x == 0)
                      dest.x = _D - 1;
@@ -525,7 +531,7 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
                  else
                      dest.y = curr_addr.y + 1; 
                  point.y(point.y() - su->getSize());
-              } else if (point.y() < 0.0) {
+              } else if (point.y() < S(0.0)) {
                  migrating = true;
                  if(curr_addr.y == 0)
                      dest.y = _D - 1;
@@ -544,7 +550,7 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
                  else
                      dest.z = curr_addr.z + 1; 
                  point.z(point.z() - su->getSize());
-              } else if (point.z() < 0.0) {
+              } else if (point.z() < S(0.0)) {
                  migrating = true;
                  if(curr_addr.z == 0)
                      dest.z = _D - 1;
