@@ -1,7 +1,11 @@
 #include "SimSystem.hpp"
 
+#ifndef _SIMSYSTEM_IMPL
+#define _SIMSYSTEM_IMPL
+
 /**! Constructor: creates a problem of NxNxN cubes */
-SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosity) {
+template <class S>
+SimSystem<S>::SimSystem(S N, S dt, S r_c, unsigned D, unsigned verbosity) {
     _N = N;
     _D = D;
     _verbosity = verbosity;
@@ -11,10 +15,7 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
     _r_c = r_c; // interaction cutoff 
     
     // create the global list of particles
-    _particles = new std::vector<Particle *>();
-
-    // create a global list of particle pairs used in the seq_run naive solver
-    _seq_pairs = new PartPair();
+    _particles = new std::vector<Particle<S> *>();
 
     if(_N == 0) { // cannot have a problem with no size
        std::runtime_error("Problem must have a size >0\n");
@@ -24,20 +25,20 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
     _unit_size = _N / (float)D;
 
     // create the list of _cubes
-    _cubes = new std::vector<SpatialUnit *>(); 
+    _cubes = new std::vector<SpatialUnit<S> *>(); 
     for(int x=0; x<_D; x++) {
         for(int y=0; y<_D; y++) {
             for(int z=0; z<_D; z++) {
-                float fpx = (float)x * _unit_size;
-                float fpy = (float)y * _unit_size;
-                float fpz = (float)z * _unit_size;
+                S fpx = (float)x * _unit_size;
+                S fpy = (float)y * _unit_size;
+                S fpz = (float)z * _unit_size;
 
                 // create a SpatialUnit and add it to the cubes
                 if(_verbosity >= 3)
                     printf("Constructing a cube (size=%f) at x:%f, y:%f, z:%f\n", _unit_size, fpx, fpy, fpz);
 
                 spatial_unit_address_t c_addr = {x,y,z};
-                _cubes->push_back(new SpatialUnit(_unit_size,fpx,fpy,fpz,c_addr, _verbosity)); // Add a new cube of size _N/_D at x,y,z
+                _cubes->push_back(new SpatialUnit<S>(_unit_size,fpx,fpy,fpz,c_addr, _verbosity)); // Add a new cube of size _N/_D at x,y,z
             }
         }
     }
@@ -91,7 +92,7 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
 
                  // x ,y ,z
                  spatial_unit_address_t curr = {x, y, z};
-                 SpatialUnit *curr_spu = getSpatialUnit(curr); 
+                 SpatialUnit<S> *curr_spu = getSpatialUnit(curr); 
                  // add all 27 neighbours to the neighbours list
                  // z = -1
                    // { -1,-1,-1 },  { -1,0,-1 },  { -1, +1,-1 }
@@ -195,9 +196,10 @@ SimSystem::SimSystem(float N, float dt, float r_c, unsigned D, unsigned verbosit
 }
 
 // returns a spatial unit when provided with a spatial unti address
-SpatialUnit * SimSystem::getSpatialUnit(spatial_unit_address_t x) {
-    for(SimSystem::iterator i=begin(); i!=end(); ++i){
-        SpatialUnit *c = *i;
+template <class S>
+SpatialUnit<S> * SimSystem<S>::getSpatialUnit(spatial_unit_address_t x) {
+    for(SimSystem<S>::iterator i=begin(); i!=end(); ++i){
+        SpatialUnit<S> *c = *i;
         spatial_unit_address_t c_addr = c->getAddr();
         if( (x.x == c_addr.x) && (x.y == c_addr.y) && (x.z == c_addr.z)) {
            return c;
@@ -207,14 +209,16 @@ SpatialUnit * SimSystem::getSpatialUnit(spatial_unit_address_t x) {
 }
 
 // bonds particle i to particle j in the universe 
-void SimSystem::bond(Particle *i, Particle *j, std::function<void(Particle *me, Particle *other)> bondf){
+template<class S>
+void SimSystem<S>::bond(Particle<S> *i, Particle<S> *j, std::function<void(Particle<S> *me, Particle<S> *other)> bondf){
     i->setOutBond(j, bondf);
     j->setInBond(i, bondf);
     return;
 }
 
 // emits the state of the system from the spatial units (relative addressing)
-void SimSystem::emitJSONFromSU(std::string jsonfile) {
+template<class S>
+void SimSystem<S>::emitJSONFromSU(std::string jsonfile) {
     std::ofstream out;
     out.open(jsonfile);
     out <<"{\n";
@@ -222,7 +226,7 @@ void SimSystem::emitJSONFromSU(std::string jsonfile) {
 
     // iterate through the spatial units and grab the offsets
     for(iterator i=begin(); i!=end(); ++i){
-        SpatialUnit *s = *i;
+        SpatialUnit<S> *s = *i;
         spatial_unit_address_t pos = s->getAddr(); 
     
         float x_off = pos.x * s->getSize(); 
@@ -230,15 +234,11 @@ void SimSystem::emitJSONFromSU(std::string jsonfile) {
         float z_off = pos.z * s->getSize(); 
 
         // iterate through all particles of this spatial unit
-        for(SpatialUnit::iterator ip=s->begin(); ip!=s->end(); ++ip){
-           Particle *cp = *ip;
+        for(auto ip=s->begin(); ip!=s->end(); ++ip){
+           Particle<S> *cp = *ip;
            float cp_x = cp->getPos().x() + x_off;
            float cp_y = cp->getPos().y() + y_off;
            float cp_z = cp->getPos().z() + z_off;
-
-           // print the position of the particles to see if they are actually stuck just on the 
-           // display or in the actual simulation
-           //printf("bead:%d pos:<%.4f, %.4f, %.4f>\n",cp->getID(), cp_x, cp_y, cp_z);
 
            // check to make sure that the particle position makes sense
            if (!isnan(cp_x) && !isnan(cp_y) && !isnan(cp_z)) {
@@ -263,7 +263,8 @@ void SimSystem::emitJSONFromSU(std::string jsonfile) {
 }
 
 // emits the state of the system as a JSON file
-void SimSystem::emitJSON(std::string jsonfile) {
+template<class S>
+void SimSystem<S>::emitJSON(std::string jsonfile) {
     std::ofstream out;
     out.open(jsonfile);
     out <<"{\n";
@@ -271,7 +272,7 @@ void SimSystem::emitJSON(std::string jsonfile) {
 
     // iterate through the particles and write the JSON 
     for(p_iterator i=p_begin(), ie=p_end(); i!=ie; ++i) {
-        Particle *p = *i;
+        Particle<S> *p = *i;
         // check to make sure the particle position makes sense
         if (!isnan(p->getPos().x()) && !isnan(p->getPos().y()) && !isnan(p->getPos().z())) {
             out << "\t{\"id\":"<<p->getID()<<", \"x\":"<<p->getPos().x()<<", \"y\":"<<p->getPos().y()<<", \"z\":"<<p->getPos().z()<<", \"vx\":"<<p->getVelo().x()<<", \"vy\":"<<p->getVelo().y()<<", \"vz\":"<<p->getVelo().z()<<", \"type\":"<<p->getType()<<"}";
@@ -291,15 +292,20 @@ void SimSystem::emitJSON(std::string jsonfile) {
 }
 
 // iterators
-SimSystem::iterator SimSystem::begin() { return _cubes->begin(); }
-SimSystem::iterator SimSystem::end() { return _cubes->end(); }
-SimSystem::p_iterator SimSystem::p_begin() { return _particles->begin(); }
-SimSystem::p_iterator SimSystem::p_end() { return _particles->end(); }
+template<class S>
+typename SimSystem<S>::iterator SimSystem<S>::begin() { return _cubes->begin(); }
+template<class S>
+typename SimSystem<S>::iterator SimSystem<S>::end() { return _cubes->end(); }
+template<class S>
+typename SimSystem<S>::p_iterator SimSystem<S>::p_begin() { return _particles->begin(); }
+template<class S>
+typename SimSystem<S>::p_iterator SimSystem<S>::p_end() { return _particles->end(); }
 
 /**! Destructor: cleans up the _cubes */
-SimSystem::~SimSystem() {
+template<class S>
+SimSystem<S>::~SimSystem() {
     for(iterator i=begin(), e=end(); i!=e; ++i){
-        SpatialUnit *cur = *i;
+        SpatialUnit<S> *cur = *i;
         if(_verbosity>=4)
             printf("removing cube (size=%f) at x:%f, y:%f, z:%f\n", cur->getSize(), cur->getPos().x, cur->getPos().y, cur->getPos().z);
         delete cur;
@@ -309,9 +315,10 @@ SimSystem::~SimSystem() {
 }
 
 // allocates a particles to spatial processing units
-void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
+template<class S>
+void SimSystem<S>::allocateParticleToSpatialUnit(Particle<S> *p) {
 
-    float cube_size = _N/_D;
+    S cube_size = _N/_D;
     spatial_unit_address_t su;
     su.x = floor(p->getPos().x()/cube_size);
     su.y = floor(p->getPos().y()/cube_size);
@@ -326,16 +333,17 @@ void SimSystem::allocateParticleToSpatialUnit(Particle *p) {
     p->setPos(relative_pos);
     p->setPrevPos(relative_pos);
 
-    SpatialUnit *sup = getSpatialUnit(su);
+    SpatialUnit<S> *sup = getSpatialUnit(su);
 
     sup->addLocalParticle(p);
 
 }
 
 //! prints the number of particles allocated per spatial unit
-void SimSystem::printSpatialAllocation() {
-   for(SimSystem::iterator i=begin(), e=end(); i!=e; ++i){
-       SpatialUnit *cur = *i;
+template<class S>
+void SimSystem<S>::printSpatialAllocation() {
+   for(SimSystem<S>::iterator i=begin(), e=end(); i!=e; ++i){
+       SpatialUnit<S> *cur = *i;
        spatial_unit_address_t pos =  cur->getAddr();
        std::cout << "Number of particles for this spatial unit ("<<pos.x << "," <<pos.y<<","<<pos.z<<"): " << cur->numBeads() << "\n"; 
    }
@@ -343,7 +351,8 @@ void SimSystem::printSpatialAllocation() {
 
 // runs the simulation for a given period uses the SpatialUnits and passing beads between them to simulate the MPI
 // based approach
-void SimSystem::run(uint32_t period, float emitrate) {
+template<class S>
+void SimSystem<S>::run(uint32_t period, float emitrate) {
 
  clock_t last_emit = clock();
  unsigned emit_cnt=0;
@@ -353,13 +362,13 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
      // for each spatial unit create their local view of the world based on their neighbours states
      for(iterator i=begin(); i!=end(); ++i) {
-         SpatialUnit *s = *i; // the current spatial unit
+         SpatialUnit<S> *s = *i; // the current spatial unit
 
          // iterate over itself and apply the forces to it's internal particles
-         for(SpatialUnit::iterator csu_p1=s->begin(); csu_p1 !=s->end(); ++csu_p1){
-             Particle *p1 = *csu_p1;
-             for(SpatialUnit::iterator csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
-               Particle *p2 = *csu_p2;
+         for(auto csu_p1=s->begin(); csu_p1 !=s->end(); ++csu_p1){
+             Particle<S> *p1 = *csu_p1;
+             for(auto csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
+               Particle<S> *p2 = *csu_p2;
                if(p1->getID() != p2->getID()) {
                   if(p1->getPos().dist(p2->getPos()) <= _r_c){
                       // do the force update
@@ -368,17 +377,16 @@ void SimSystem::run(uint32_t period, float emitrate) {
                       p1->callRandom(_grand, p2);
 
                       // check to see if this bead is the Out Bond
-                      Particle *outBond = p1->getOutBondBead();
+                      Particle<S> *outBond = p1->getOutBondBead();
                       if(outBond == p2) {
                         p1->callBond();
                       }                       
  
                       // check to see we are the In Bond bead for the foreign particle fp
-                      Particle *inBond = p1->getInBondBead();
+                      Particle<S> *inBond = p1->getInBondBead();
                       if(inBond == p2){
                          p2->callInverseBond();
                       }
-
 
                    } 
                } 
@@ -387,15 +395,12 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
 
          // iterate over all neighbours and solve the forces for all the particles local to this spatial unit          
-         for(SpatialUnit::n_iterator j=s->n_begin(); j!=s->n_end(); ++j) {
-            SpatialUnit *neighbour = *j;
+         for(auto j=s->n_begin(); j!=s->n_end(); ++j) {
+            SpatialUnit<S> *neighbour = *j;
 
             // calculate the relative position offsets for this neighbour
             spatial_unit_address_t n_addr = neighbour->getAddr();
             spatial_unit_address_t this_addr = s->getAddr(); // we need wraparound for this
-
-            // debug
-            //if(neighbour->numBeads() >= 1)
 
             // get relative positions from the abs spatial unit addresses
             int x_rel = n_addr.x - this_addr.x;
@@ -419,14 +424,14 @@ void SimSystem::run(uint32_t period, float emitrate) {
                   z_rel = 1;
                    
 
-            float x_off = (float)(x_rel)*neighbour->getSize();
-            float y_off = (float)(y_rel)*neighbour->getSize();
-            float z_off = (float)(z_rel)*neighbour->getSize();
+            S x_off = (float)(x_rel)*neighbour->getSize();
+            S y_off = (float)(y_rel)*neighbour->getSize();
+            S z_off = (float)(z_rel)*neighbour->getSize();
 
             // loop over all the particles in this neighbour and apply the forces to our particles
-            for(SpatialUnit::iterator np=neighbour->begin(); np!=neighbour->end(); ++np){
+            for(auto np=neighbour->begin(); np!=neighbour->end(); ++np){
               // move the position of this particle to be relative to our own (we will need to restore it once we are done) 
-               Particle *fp = *np;
+               Particle<S> *fp = *np;
                Vector3D fp_pos = fp->getPos();
                Vector3D n_fp_pos(fp_pos.x() + x_off, fp_pos.y() + y_off, fp_pos.z() + z_off);
                fp->setPos(n_fp_pos); 
@@ -438,8 +443,8 @@ void SimSystem::run(uint32_t period, float emitrate) {
                
                 
                // loop over all our particles and apply the forces and update
-               for(SpatialUnit::iterator this_pi = s->begin(); this_pi != s->end(); ++this_pi){
-                   Particle *this_p = *this_pi; // apply the forces to our particle
+               for(auto this_pi = s->begin(); this_pi != s->end(); ++this_pi){
+                   Particle<S> *this_p = *this_pi; // apply the forces to our particle
                    if(this_p->getPos().dist(fp->getPos()) <= _r_c) {
  
                        // these particles are in range of each other
@@ -449,13 +454,13 @@ void SimSystem::run(uint32_t period, float emitrate) {
                        this_p->callRandom(_grand, fp);
                         
                        // check to see if this bead is the Out Bond
-                       Particle *outBond = this_p->getOutBondBead();
+                       Particle<S> *outBond = this_p->getOutBondBead();
                        if(outBond == fp) {
                          this_p->callBond();
                        }                       
  
                        // check to see we are the In Bond bead for the foreign particle fp
-                       Particle *inBond = this_p->getInBondBead();
+                       Particle<S> *inBond = this_p->getInBondBead();
                        if(inBond == fp){
                           fp->callInverseBond();
                        }
@@ -473,14 +478,14 @@ void SimSystem::run(uint32_t period, float emitrate) {
      // we are done updating all the forces, now we can start updating the positions and doing particle migration
      // update v_i and r_i for each particle
      // iterate over all spatial units
-     std::vector<Particle *> to_migrate; // list of particles we want to migrate
-     std::vector<SpatialUnit *> src_migrate; // the source spatial unit for each migration
-     std::vector<SpatialUnit *> dest_migrate; // the destination spatial unit for each migration
+     std::vector<Particle<S> *> to_migrate; // list of particles we want to migrate
+     std::vector<SpatialUnit<S> *> src_migrate; // the source spatial unit for each migration
+     std::vector<SpatialUnit<S> *> dest_migrate; // the destination spatial unit for each migration
      for(iterator sui=begin(); sui!=end(); ++sui) {
-         SpatialUnit *su = *sui;
-         std::vector<Particle *> tmp_su_particles = su->copyOfParticles();
-         for(SpatialUnit::iterator i=tmp_su_particles.begin(), ie=tmp_su_particles.end(); i!=ie; ++i) {
-              Particle *p = *i;
+         SpatialUnit<S> *su = *sui;
+         std::vector<Particle<S> *> tmp_su_particles = su->copyOfParticles();
+         for(auto i=tmp_su_particles.begin(), ie=tmp_su_particles.end(); i!=ie; ++i) {
+              Particle<S> *p = *i;
               float mass = p->getMass();
               Vector3D acceleration = p->getForce()/mass;
               Vector3D delta_v = (p->getForce()/mass) * _dt;
@@ -558,7 +563,7 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
               // do we actually need to migrate?
               if(migrating) {
-                 SpatialUnit *dest_su = getSpatialUnit(dest);
+                 SpatialUnit<S> *dest_su = getSpatialUnit(dest);
                  to_migrate.push_back(p);            
                  src_migrate.push_back(su);
                  dest_migrate.push_back(dest_su);
@@ -575,9 +580,9 @@ void SimSystem::run(uint32_t period, float emitrate) {
 
      // perform all the migrations
      for(unsigned i=0; i<to_migrate.size(); i++){
-          Particle *p = to_migrate[i];
-          SpatialUnit *src = src_migrate[i];
-          SpatialUnit *dst = dest_migrate[i];
+          Particle<S> *p = to_migrate[i];
+          SpatialUnit<S> *src = src_migrate[i];
+          SpatialUnit<S> *dst = dest_migrate[i];
 
           dst->addLocalParticle(p); 
           if(!src->removeParticle(p)) {
@@ -608,8 +613,6 @@ void SimSystem::run(uint32_t period, float emitrate) {
      _t = _t + _dt;
      _grand = rand();
 
-     //printf("next iteration: g_rand=%u, ts=%u\n", _grand, _ts);
-
    } // period has elapsed
 
 }
@@ -618,12 +621,14 @@ void SimSystem::run(uint32_t period, float emitrate) {
 // runs the simulation for a given number of timesteps sequentially there is no parallelism here
 // emits the state of each particle given by the emitrate
 // this is the naive implementation of this algorithm (horrifically slow)
-void SimSystem::seq_run(uint32_t period, float emitrate) {
+template<class S>
+void SimSystem<S>::seq_run(uint32_t period, float emitrate) {
 
 }
 
 // adds a particle to the system with global coordinates
-void SimSystem::addParticle(Particle *p){
+template<class S>
+void SimSystem<S>::addParticle(Particle<S> *p){
     // add the particle to the global particles list
     p->setID(_particles->size()); // just use the current number of particles as a unique ID
     _particles->push_back(p);     
@@ -631,7 +636,8 @@ void SimSystem::addParticle(Particle *p){
 }
 
 // adds a particle to the system with local coordinates
-void SimSystem::addLocalParticle(Particle *p){
+template<class S>
+void SimSystem<S>::addLocalParticle(Particle<S> *p){
     // add the particle to the global particles list
     p->setID(_particles->size()); // just use the current number of particles as a unique ID
     _particles->push_back(p);     
@@ -672,3 +678,4 @@ void SimSystem::addLocalParticle(Particle *p){
 //    }
 //}
 
+#endif /* _SIMSYSTEM_IMPL */

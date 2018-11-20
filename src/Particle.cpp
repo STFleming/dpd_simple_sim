@@ -1,7 +1,11 @@
 #include "Particle.hpp"
 
+#ifndef _PARTICLE_IMPL
+#define _PARTICLE_IMPL
+
 // constructor (sets the initial position of the particle)
-Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(uint32_t grand, Particle *me, Particle *other)> random) {
+template<class S>
+Particle<S>::Particle(Vector3D pos, uint32_t type, S mass, std::function<void(Particle<S> *me, Particle<S> *other)> conservative, std::function<void(Particle<S> *me, Particle<S> *other)> drag, std::function<void(uint32_t grand, Particle<S> *me, Particle<S> *other)> random) {
    _pos = pos;
    _prev_pos = pos+0.0001; // small addition to avoid initial condition problems
    _velocity = Vector3D(0.0, 0.0, 0.0);
@@ -23,116 +27,141 @@ Particle::Particle(Vector3D pos, uint32_t type, float mass, std::function<void(P
 }
 
 // destructor (destroys this particle)
-Particle::~Particle() {
+template<class S>
+Particle<S>::~Particle() {
 }
 
 // used to set particle bonds
-bool Particle::isBonded() { return _isBonded;}
+template<class S>
+bool Particle<S>::isBonded() { return _isBonded;}
 
 // used to set the particle this should be bonded to
-void Particle::setInBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
+template<class S>
+void Particle<S>::setInBond(Particle<S> *p, std::function<void(Particle<S> *me, Particle<S> *other)> bondf){
     _isBonded = true;
     _inBond = p;
     _bond = bondf;  
 }
 
 // used to set the particle this should be bonded to
-void Particle::setOutBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf){
+template<class S>
+void Particle<S>::setOutBond(Particle<S> *p, std::function<void(Particle<S> *me, Particle<S> *other)> bondf){
     _isBonded = true;
     _outBond = p;
     _bond = bondf;  
 }
 
 // returns the pointer to the particle that this is bonded to
-Particle * Particle::getInBondBead(){ return _inBond; }
-Particle * Particle::getOutBondBead(){ return _outBond; }
+template<class S>
+Particle<S> * Particle<S>::getInBondBead(){ return _inBond; }
+template<class S>
+Particle<S> * Particle<S>::getOutBondBead(){ return _outBond; }
 
 // sets a new position for this particle
-void Particle::setPos(Vector3D npos) {
+template<class S>
+void Particle<S>::setPos(Vector3D npos) {
     _pos = npos;
 }
 
 // sets a new previous position for this particle
-void Particle::setPrevPos(Vector3D npos) {
+template<class S>
+void Particle<S>::setPrevPos(Vector3D npos) {
     _prev_pos = npos;
 }
 
 // gets the current position of the particle
-Vector3D Particle::getPos(){
+template<class S>
+Vector3D Particle<S>::getPos(){
    return _pos; 
 }
 
 // gets the prev position of the particle
-Vector3D Particle::getPrevPos(){
+template<class S>
+Vector3D Particle<S>::getPrevPos(){
    return _prev_pos; 
 }
 
 
 // gets the velocity for the particle
-Vector3D Particle::getVelo() {
+template<class S>
+Vector3D Particle<S>::getVelo() {
     return _velocity;
 }
 
 // sets the velocity of this particle
-void Particle::setVelo(Vector3D velo) {
+template<class S>
+void Particle<S>::setVelo(Vector3D velo) {
     _velocity = velo;
 }
 
 // get the mass of this particle
-float Particle::getMass() {
+template<class S>
+S Particle<S>::getMass() {
     return _mass;
 }
 
 // gets the ID of this particle
-uint32_t Particle::getID() {
+template<class S>
+uint32_t Particle<S>::getID() {
     return _id;
 }
 
 // gets the type of this particle
-uint32_t Particle::getType() {
+template<class S>
+uint32_t Particle<S>::getType() {
     return _type;
 }
 
 // sets the ID of this particle
-void Particle::setID(uint32_t id) {
+template<class S>
+void Particle<S>::setID(uint32_t id) {
     _id = id;
     return;
 } 
 
 // getters and setters for the force of this particle
-void Particle::setForce(Vector3D force) {
+template<class S>
+void Particle<S>::setForce(Vector3D force) {
     _force = force;
 }
 
-Vector3D Particle::getForce(void) {
+template<class S>
+Vector3D Particle<S>::getForce(void) {
     return _force;
 }
 
 // calls the conservative force function
-void Particle::callConservative(Particle *other) {
+template<class S>
+void Particle<S>::callConservative(Particle<S> *other) {
     _conservative(this, other);
 }
 
 // calls the drag force function 
-void Particle::callDrag(Particle *other) {
+template<class S>
+void Particle<S>::callDrag(Particle<S> *other) {
     _drag(this, other);
 }
 
 // calls the random force function
-void Particle::callRandom(uint32_t grand, Particle *other) {
+template<class S>
+void Particle<S>::callRandom(uint32_t grand, Particle<S> *other) {
     _random(grand, this, other);
 }
 
 // calls the bond force function
-void Particle::callBond() {
+template<class S>
+void Particle<S>::callBond() {
     if(_isBonded){
       _bond(this, getOutBondBead());
     }
 }
 
 // calls the bond force function from the other way around
-void Particle::callInverseBond() {
+template<class S>
+void Particle<S>::callInverseBond() {
    if(_isBonded) {
       _bond(getOutBondBead(), this);
    }
 }
+
+#endif /* _PARTICLE_IMPL */

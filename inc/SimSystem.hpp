@@ -23,34 +23,33 @@
 
 //! SimSystem
 //! A class used to define the system that is being simulated
+template <class S> // S is the type for this simulation for example a fixedap type or double/float
 class SimSystem {
     public:
-        SimSystem(float N, float dt, float r_c,  unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
+        SimSystem(S N, S dt, S r_c,  unsigned D, unsigned verbosity=0); /**< constructor takes the size of the problem as an argument */       
         ~SimSystem(); /**< Destructor */
 
         // Iterator type
         // default iterators is for the spatial units
-        typedef std::vector<SpatialUnit *>::iterator iterator;
+        typedef typename std::vector<SpatialUnit<S> *>::iterator iterator;
         iterator begin(); /**< returns the begining of the _cubes vector */
         iterator end(); /**< returns the end of the _cubes vector */
         // but we also have particle iterators for the global particles list
-        typedef std::vector<Particle *>::iterator p_iterator;
+        typedef typename std::vector<Particle<S> *>::iterator p_iterator;
         p_iterator p_begin(); /**< returns the start of the global particle list */
         p_iterator p_end(); /**< returns the start of the global particle list */
-
-        typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
 
         // simulation management
         void run(uint32_t period, float emitrate); /**< runs the simulation for period timesteps */
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
-        void addParticle(Particle *p); /**< Adds a particle to the system with a global position */
-        void addLocalParticle(Particle *p); /**< Add a particle to the system with position relative to its spatial unti */
+        void addParticle(Particle<S> *p); /**< Adds a particle to the system with a global position */
+        void addLocalParticle(Particle<S> *p); /**< Add a particle to the system with position relative to its spatial unti */
         //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
-        void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
-        void bond(Particle *i, Particle *j, std::function<void(Particle* me, Particle *other)> bondf); /**< Bonds particles i and j with bond function bondf */
-        SpatialUnit * getSpatialUnit(spatial_unit_address_t x); /**< returns a spatial unit given a spatial unit address */
+        void allocateParticleToSpatialUnit(Particle<S> *p); /**< Allocates all the particles to a spatial processing unit */
+        void bond(Particle<S> *i, Particle<S> *j, std::function<void(Particle<S>* me, Particle<S> *other)> bondf); /**< Bonds particles i and j with bond function bondf */
+        SpatialUnit<S> * getSpatialUnit(spatial_unit_address_t x); /**< returns a spatial unit given a spatial unit address */
 
         // exporting
         void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
@@ -60,20 +59,20 @@ class SimSystem {
         void printSpatialAllocation();
 
     private:
-        float _t; /**< the current simulation time */
-        float _dt; /**< simulation timestep size */
-        float _r_c; /**< the cutoff distance */
+        S _t; /**< the current simulation time */
+        S _dt; /**< simulation timestep size */
+        S _r_c; /**< the cutoff distance */
         unsigned _ts; /**< the current integer timestep */
-        float _N; /**< the size of the problem is NxNxN */
+        S _N; /**< the size of the problem is NxNxN */
         unsigned _D; /**< the number of discrete cubes along an axis */
         unsigned _verbosity = 0; /**< the verbosity of the simulation*/
-        float _unit_size; /**< each spatial unit has a size _unit_size x _unit_size x _unit_size */
-        std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
-        std::vector<Particle *>* _particles; /**< the global list of particles */
-        PartPair* _seq_pairs; /**< used in the seq_run to keep track of which pairwise interactions have already been processed */  
-         uint32_t _grand; /**< a global random number used for dt10's has based random number tech , updated every simulation step and passed to the rand force function*/
+        S _unit_size; /**< each spatial unit has a size _unit_size x _unit_size x _unit_size */
+        std::vector<SpatialUnit<S> *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
+        std::vector<Particle<S> *>* _particles; /**< the global list of particles */
+        uint32_t _grand; /**< a global random number used for dt10's has based random number tech , updated every simulation step and passed to the rand force function*/
         
 };
 
+#include "../src/SimSystem.cpp"
 
 #endif /* __SIM_SYSTEM_H */ 

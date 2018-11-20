@@ -18,8 +18,3 @@ Vector3D rand2DPos(float N){
     return t_pos; 
 }
 
-// conversion function
-position_t vec2pos(Vector3D a) {
-    position_t t = {a.x(), a.y(), a.z()};
-    return t;
-}
