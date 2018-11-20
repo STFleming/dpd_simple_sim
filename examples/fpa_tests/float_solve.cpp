@@ -154,7 +154,7 @@ int main() {
    // mass of the particles
    const float mass_p0 = 1.0;
 
-   const unsigned num_cubes = 10;
+   const unsigned num_cubes = 2;
    const float cube_size = unisize/num_cubes;
 
    SimSystem<float> universe(unisize, DELTA_T, R_C, num_cubes, 0);

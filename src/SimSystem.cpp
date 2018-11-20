@@ -354,23 +354,17 @@ void SimSystem<S>::run(uint32_t period, float emitrate) {
 
  for(uint32_t t=0; t<period; t++) {
  
-     printf("starting iteration(%d)\n", t);
-     
      // for each spatial unit create their local view of the world based on their neighbours states
      for(iterator i=begin(); i!=end(); ++i) {
          SpatialUnit<S> *s = *i; // the current spatial unit
 
-         printf("SU<%d,%d,%d>\n", s->getAddr().x, s->getAddr().y, s->getAddr().z); 
- 
          // iterate over itself and apply the forces to it's internal particles
          for(auto csu_p1=s->begin(); csu_p1 !=s->end(); ++csu_p1){
              Particle<S> *p1 = *csu_p1;
              for(auto csu_p2=s->begin(); csu_p2!=s->end(); ++csu_p2){
                Particle<S> *p2 = *csu_p2;
                if(p1->getID() != p2->getID()) {
-                  printf("\tlocal bead interation B:%d <-> B:%d\n", p1->getID(), p2->getID());
                   if(p1->getPos().dist(p2->getPos()) <= _r_c){
-                      printf("\t\tin range\n");
                       // do the force update
                       p1->callConservative(p2);
                       p1->callDrag(p2);

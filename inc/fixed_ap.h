@@ -208,25 +208,25 @@ fixap<int8_t,F> to_signed(fixap<uint8_t, F> x) { return fixap<int8_t,F>((int8_t)
 template<unsigned F>
 fixap<int64_t, F> sqrt(fixap<int64_t, F> in) {
     fixap<uint64_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(30));
+    return to_signed(t.sqrt(50));
 }
 
 template<unsigned F>
 fixap<int32_t, F> sqrt(fixap<int32_t, F> in) {
     fixap<uint32_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(30));
+    return to_signed(t.sqrt(50));
 }
 
 template<unsigned F>
 fixap<int16_t, F> sqrt(fixap<int16_t, F> in) {
     fixap<uint16_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(30));
+    return to_signed(t.sqrt(50));
 }
 
 template<unsigned F>
 fixap<int8_t, F> sqrt(fixap<int8_t, F> in) {
     fixap<uint8_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(30));
+    return to_signed(t.sqrt(50));
 }
 
 //template<class C, unsigned F>
