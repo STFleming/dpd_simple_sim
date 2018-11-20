@@ -41,17 +41,23 @@ class SimSystem {
         typedef std::vector<std::tuple<Particle *, Particle *>> PartPair; /**< in the seq run this is used to keep track of which pairs have already been visited */ 
 
         // simulation management
-        void run(uint32_t period); /**< runs the simulation for period timesteps */
+        void run(uint32_t period, float emitrate); /**< runs the simulation for period timesteps */
         void seq_run(uint32_t period, float emitrate); /**< runs the simulation sequentially (no parallelism) for period timesteps emitting it's state every emitrate timesteps */
 
         // Particle management
-        void addParticle(Particle *p); /**< Add a particle to the system */
+        void addParticle(Particle *p); /**< Adds a particle to the system with a global position */
+        void addLocalParticle(Particle *p); /**< Add a particle to the system with position relative to its spatial unti */
         //void populateFromJSON(std::string jsonfile); /**< populates the system with particles contained within a JSON file*/
         void allocateParticleToSpatialUnit(Particle *p); /**< Allocates all the particles to a spatial processing unit */
         void bond(Particle *i, Particle *j, std::function<void(Particle* me, Particle *other)> bondf); /**< Bonds particles i and j with bond function bondf */
+        SpatialUnit * getSpatialUnit(spatial_unit_address_t x); /**< returns a spatial unit given a spatial unit address */
 
         // exporting
         void emitJSON(std::string jsonfile); /**< emits global particle IDs and position as one JSON file (used for initial values) */
+        void emitJSONFromSU(std::string jsonfile); /**< emits the global particle IDs and the position from each spatial unit as a JSON file */
+        // debug & testing
+        // print the number of particles per spatial unit
+        void printSpatialAllocation();
 
     private:
         float _t; /**< the current simulation time */
@@ -65,6 +71,7 @@ class SimSystem {
         std::vector<SpatialUnit *>* _cubes; /**< contains the cubes of SpatialUnits (chunks) of the problem space */ 
         std::vector<Particle *>* _particles; /**< the global list of particles */
         PartPair* _seq_pairs; /**< used in the seq_run to keep track of which pairwise interactions have already been processed */  
+         uint32_t _grand; /**< a global random number used for dt10's has based random number tech , updated every simulation step and passed to the rand force function*/
         
 };
 

@@ -9,10 +9,11 @@
 // Particle class
 class Particle {
     public:
-        Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
+        Particle(Vector3D pos, uint32_t type, float mass, std::function<void(Particle *me, Particle *other)> conservative, std::function<void(Particle *me, Particle *other)> drag, std::function<void(uint32_t grand, Particle *me, Particle *other)> random); /**< Constructor that sets the initial position of the particle */
         ~Particle(); /**< destructor that destroys this particle */ 
         Vector3D getPos(); /**< get the position of this particle */
         void setPos(Vector3D npos); /**< set a new position for this particle */
+        void setPrevPos(Vector3D npos); /**< set a new previous position for this particle and rewrite history */
         Vector3D getPrevPos(); /**< get the previous position of this particle */
         Vector3D getVelo(); /**< gets the velocity for this particle */
         void setVelo(Vector3D velo); /**< sets the velocity for this particle */
@@ -28,13 +29,16 @@ class Particle {
         // for calling the separate force functions
         void callConservative(Particle *other); /**< calls the conservative force and applied it to this */
         void callDrag(Particle *other); /**< calls the drag force and applied to this */
-        void callRandom(Particle *other); /**< calls the random force function applied to this */
-        void callBond(); /**< calls the force on the bonded particle */
+        void callRandom(uint32_t grand, Particle *other); /**< calls the random force function applied to this */
+        void callBond(); /**< calls the force on the bonded particle from this particles perspective */
+        void callInverseBond(); /**< calls the force on the bond from the other particles perspective */
 
         // sets the bond force
-        void setBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf); /**< bonds this particle to another particle */
+        void setInBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf); /**< bonds this particle to another particle */
+        void setOutBond(Particle *p, std::function<void(Particle *me, Particle *other)> bondf); /**< bonds this particle to another particle */
         bool isBonded(); 
-        Particle * getBondedParticle(); /**< returns a pointer to the bonded particle */
+        Particle * getInBondBead(); /**< returns a pointer to the bonded particle */
+        Particle * getOutBondBead(); /**< returns a pointer to the bonded particle */
 
     private:
         Vector3D _velocity; /**< the current velocity of the particle */
@@ -45,12 +49,13 @@ class Particle {
         Vector3D _force; /**< the forces accumulated on this particle for this timestep */
         uint32_t _type; /**< identifier for the type of this particle (user configurable) */
         bool _isBonded; /**< True if this particle is bonded to another particle */
-        Particle* _bondParticle; /**< the particle that this particle may or may not be bonded to */
+        Particle* _inBond; /**< the particle that this particle may or may not be bonded to */
+        Particle* _outBond; /**< the particle that this particle may or may not be bonded to */
 
         // Force functions
         std::function<void(Particle * me, Particle * other)> _conservative; /**< the pairwise conservative force function */ 
         std::function<void(Particle * me, Particle * other)> _drag; /**< the pairwise drag force function */
-        std::function<void(Particle * me, Particle * other)> _random; /**< the pairwise random force function */
+        std::function<void(uint32_t grand, Particle * me, Particle * other)> _random; /**< the pairwise random force function */
         std::function<void(Particle *me, Particle *other)> _bond; /**< the pairwise bonded force (may or may not exist) */
 };
 
