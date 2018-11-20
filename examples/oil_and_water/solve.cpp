@@ -8,9 +8,9 @@
 #include "utils.hpp"
 #include <random>
 
-#define DELTA_T 0.001 
+#define DELTA_T 0.02 
 //#define DELTA_T 0.001 
-#define UNISIZE_D 14.0 // the size of a single dimension of the universe
+#define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
 const float A[3][3] = { {25.0, 75.0, 35.0}, 
@@ -115,34 +115,26 @@ int main() {
    // mass of the particles
    const float mass_p0 = 1.0;
 
-   const unsigned num_cubes = 4;
+   const unsigned num_cubes = 2;
    const float cube_size = unisize/num_cubes;
 
    SimSystem universe(unisize, DELTA_T, R_C, num_cubes, 0);
 
-   Particle *p0 = new Particle(Vector3D(9.9,0.0,0.0), 0, mass_p0, conF, dragF, randF);
-   //Particle *p1 = new Particle(p0->getPos() + Vector3D(0.25,0.0,0.0), 0, mass_p0, conF, dragF, randF);
-   Particle *p1 = new Particle(Vector3D(0.1,0.0,0.0), 0, mass_p0, conF, dragF, randF);
-   Particle *p2 = new Particle(Vector3D(5.0,0.25,0.0), 0, mass_p0, conF, dragF, randF);
-   universe.addParticle(p0);
-   universe.addParticle(p1);
-   universe.addParticle(p2);
-   
    // add water
-   for(int w=0; w<150; w++){
-       Particle *p = new Particle(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
+   for(int w=0; w<600; w++){
+       Particle *p = new Particle(randPos(unisize), 0, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // add orange oil 
-   for(int o_o=0; o_o<100; o_o++){
-       Particle *p = new Particle(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
+   for(int o_o=0; o_o<300; o_o++){
+       Particle *p = new Particle(randPos(unisize), 1, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // add green oil 
    for(int g_o=0; g_o<100; g_o++){
-       Particle *p = new Particle(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
+       Particle *p = new Particle(randPos(unisize), 2, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
@@ -150,7 +142,7 @@ int main() {
    universe.emitJSONFromSU("state.json");
    
    // run the simulation universe for some timesteps 
-   universe.run(-1, 0.15);
+   universe.run(-1, 0.25);
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
