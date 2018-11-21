@@ -9,49 +9,53 @@
 #include <random>
 #include "fixed_ap.h"
 
-#define DELTA_T 0.02 
+#define DELTA_T 0.0002 
+//#define DELTA_T 0.02 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 
-const fixap<int32_t,27> A[3][3] = {  {fixap<int32_t,27>(25.0), fixap<int32_t,27>(75.0), fixap<int32_t,27>(35.0)}, 
-                                     {fixap<int32_t,27>(75.0), fixap<int32_t,27>(25.0), fixap<int32_t,27>(50.0)},  
-                                     {fixap<int32_t,27>(35.0), fixap<int32_t,27>(50.0), fixap<int32_t,27>(25.0)}};
+typedef fixap<int32_t, 27> fix_p;
+//typedef float fix_p;
 
-Vector3D<fixap<int32_t,27>> randPos(unsigned N){
-    Vector3D<fixap<int32_t,27>> t_pos;
-    fixap<int32_t,27> x(rand() / (float)RAND_MAX * N);
-    fixap<int32_t,27> y(rand() / (float)RAND_MAX * N);
-    fixap<int32_t,27> z(rand() / (float)RAND_MAX * N);
+const fix_p A[3][3] = {  {fix_p(25.0), fix_p(75.0), fix_p(35.0)}, 
+                                     {fix_p(75.0), fix_p(25.0), fix_p(50.0)},  
+                                     {fix_p(35.0), fix_p(50.0), fix_p(25.0)}};
+
+Vector3D<fix_p> randPos(unsigned N){
+    Vector3D<fix_p> t_pos;
+    fix_p x(rand() / (float)RAND_MAX * N);
+    fix_p y(rand() / (float)RAND_MAX * N);
+    fix_p z(rand() / (float)RAND_MAX * N);
     t_pos.set(x,y,z);
     return t_pos;
 }
 
 
 //! generates a random position within a given space (NxN)
-Vector3D<fixap<int32_t,27>> rand2DPos(unsigned N){
-    Vector3D<fixap<int32_t,27>> t_pos;
-    fixap<int32_t,27> x(rand() / (float)RAND_MAX * N);
-    fixap<int32_t,27> y(rand() / (float)RAND_MAX * N);
-    fixap<int32_t,27> z(0.0);
+Vector3D<fix_p> rand2DPos(unsigned N){
+    Vector3D<fix_p> t_pos;
+    fix_p x(rand() / (float)RAND_MAX * N);
+    fix_p y(rand() / (float)RAND_MAX * N);
+    fix_p z(0.0);
     t_pos.set(x,y,z);
     return t_pos;
 }
 
 
 // conservative pairwise force declaration
-void conF(Particle<fixap<int32_t,27>> *me, Particle<fixap<int32_t,27>> *other){
+void conF(Particle<fix_p> *me, Particle<fix_p> *other){
 
     
-    fixap<int32_t,27> a_ij = A[me->getType()][other->getType()]; // the interaction strength
-    const fixap<int32_t,27> r_c(R_C); // the interaction cutoff
+    fix_p a_ij = A[me->getType()][other->getType()]; // the interaction strength
+    const fix_p r_c(R_C); // the interaction cutoff
 
-    Vector3D<fixap<int32_t,27>> r_i = me->getPos();
-    Vector3D<fixap<int32_t,27>> r_j = other->getPos();
-    fixap<int32_t,27> r_ij_dist = r_i.dist(r_j); // get the distance
-    Vector3D<fixap<int32_t,27>> r_ij = r_i - r_j;
+    Vector3D<fix_p> r_i = me->getPos();
+    Vector3D<fix_p> r_j = other->getPos();
+    fix_p r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D<fix_p> r_ij = r_i - r_j;
  
     // Equation 8.5 in the dl_meso manual
-    Vector3D<fixap<int32_t, 27>> force = (r_ij/r_ij_dist) * (a_ij * (fixap<int32_t,27>(1.0) - (r_ij_dist/r_c)));
+    Vector3D<fix_p> force = (r_ij/r_ij_dist) * (a_ij * (fix_p(1.0) - (r_ij_dist/r_c)));
 
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
@@ -60,28 +64,28 @@ void conF(Particle<fixap<int32_t,27>> *me, Particle<fixap<int32_t,27>> *other){
 }
 
 // drag pairwie force declaration
-void dragF(Particle<fixap<int32_t,27>> *me, Particle<fixap<int32_t,27>> *other) {
+void dragF(Particle<fix_p> *me, Particle<fix_p> *other) {
 
     
-    const fixap<int32_t,27> r_c(R_C); // the interaction cutoff
-    const fixap<int32_t,27> drag_coef(4.5); // the drag coefficient (no idea what to set this at)
+    const fix_p r_c(R_C); // the interaction cutoff
+    const fix_p drag_coef(4.5); // the drag coefficient (no idea what to set this at)
 
     // position and distance
-    Vector3D<fixap<int32_t,27>> r_i = me->getPos();
-    Vector3D<fixap<int32_t,27>> r_j = other->getPos();
-    fixap<int32_t,27> r_ij_dist = r_i.dist(r_j); // get the distance
-    Vector3D<fixap<int32_t,27>> r_ij = r_j - r_i; // vector between the points
+    Vector3D<fix_p> r_i = me->getPos();
+    Vector3D<fix_p> r_j = other->getPos();
+    fix_p r_ij_dist = r_i.dist(r_j); // get the distance
+    Vector3D<fix_p> r_ij = r_j - r_i; // vector between the points
 
     // switching function
-    fixap<int32_t,27> w_d = (fixap<int32_t,27>(1.0) - r_ij_dist / r_c)*(fixap<int32_t,27>(1.0) - r_ij_dist / r_c);
+    fix_p w_d = (fix_p(1.0) - r_ij_dist / r_c)*(fix_p(1.0) - r_ij_dist / r_c);
 
 
     // velocities
-    Vector3D<fixap<int32_t,27>> v_i = me->getVelo(); 
-    Vector3D<fixap<int32_t,27>> v_j = other->getVelo();
-    Vector3D<fixap<int32_t,27>> v_ij = v_i - v_j; // relative velocity
+    Vector3D<fix_p> v_i = me->getVelo(); 
+    Vector3D<fix_p> v_j = other->getVelo();
+    Vector3D<fix_p> v_ij = v_i - v_j; // relative velocity
 
-    Vector3D<fixap<int32_t,27>> force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (fixap<int32_t,27>(-1.0) * drag_coef); 
+    Vector3D<fix_p> force = (r_ij / (r_ij_dist * r_ij_dist)) * w_d * r_ij.dot(v_ij) * (fix_p(-1.0) * drag_coef); 
 
     // update the forces acting on the two particles
     me->setForce( me->getForce() + force); 
@@ -99,31 +103,31 @@ uint32_t pairwise_rand(uint32_t grand, uint32_t pid1, uint32_t pid2){
 }
 
 // random pairwise force declaration
-void randF(uint32_t grand, Particle<fixap<int32_t,27>> *me, Particle<fixap<int32_t,27>> *other) {
+void randF(uint32_t grand, Particle<fix_p> *me, Particle<fix_p> *other) {
 
-   const fixap<int32_t,27> K_BT(1.0);
-   const fixap<int32_t,27> drag_coef(4.5); // the drag coefficient (no idea what to set this at)
-   const fixap<int32_t,27> sigma_ij(sqrt(2*drag_coef*K_BT)); // the temperature coef
-   const fixap<int32_t,27> dt(DELTA_T); 
-   const fixap<int32_t,27> r_c(R_C); // the interaction cutoff
+   const fix_p K_BT(1.0);
+   const fix_p drag_coef(4.5); // the drag coefficient (no idea what to set this at)
+   const fix_p sigma_ij(sqrt(2*drag_coef*K_BT)); // the temperature coef
+   const fix_p dt(DELTA_T); 
+   const fix_p r_c(R_C); // the interaction cutoff
 
    // position and distance
-   Vector3D<fixap<int32_t,27>> r_i = me->getPos();
-   Vector3D<fixap<int32_t,27>> r_j = other->getPos();
-   fixap<int32_t,27> r_ij_dist = r_i.dist(r_j); // get the distance
-   Vector3D<fixap<int32_t,27>> r_ij = r_j - r_i; // vector between the points
+   Vector3D<fix_p> r_i = me->getPos();
+   Vector3D<fix_p> r_j = other->getPos();
+   fix_p r_ij_dist = r_i.dist(r_j); // get the distance
+   Vector3D<fix_p> r_ij = r_j - r_i; // vector between the points
 
    // switching function
-   fixap<int32_t,27> w_r = (fixap<int32_t,27>(1.0) - r_ij_dist/r_c);
+   fix_p w_r = (fix_p(1.0) - r_ij_dist/r_c);
       
    // random number generation
-   fixap<int32_t,27> r((pairwise_rand(grand, me->getID(), other->getID()) / (float)(RAND_MAX)) * 0.5);
+   fix_p r((pairwise_rand(grand, me->getID(), other->getID()) / (float)(RAND_MAX)) * 0.5);
 
    // force calculation
-   Vector3D<fixap<int32_t,27>> force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
+   Vector3D<fix_p> force = (r_ij / r_ij_dist)*sqrt(dt)*r*w_r*sigma_ij;  
 
    // update the forces acting on the two particles
-   me->setForce( me->getForce() + force*fixap<int32_t,27>(-1.0)); 
+   me->setForce( me->getForce() + force*fix_p(-1.0)); 
 
    return;
 }
@@ -134,30 +138,39 @@ int main() {
    const float unisize = UNISIZE_D;
 
    // mass of the particles
-   const fixap<int32_t,27> mass_p0(1.0);
+   const fix_p mass_p0(1.0);
 
-   const unsigned num_cubes = 2;
-   const fixap<int32_t,27> cube_size(unisize/num_cubes);
+   const unsigned num_cubes = 10;
+   const fix_p cube_size(unisize/num_cubes);
 
-   SimSystem<fixap<int32_t,27>> universe(fixap<int32_t,27>(unisize), fixap<int32_t,27>(DELTA_T), fixap<int32_t,27>(R_C), num_cubes, 0);
+   SimSystem<fix_p> universe(fix_p(unisize), fix_p(DELTA_T), fix_p(R_C), num_cubes, 0);
 
-   // add water
-   for(int w=0; w<500; w++){
-       Particle<fixap<int32_t,27>> *p = new Particle<fixap<int32_t,27>>(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   Particle<fix_p> *p0 = new Particle<fix_p>(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
+   Vector3D<fix_p> offset(fix_p(0.25),fix_p(0.0),fix_p(0.0));
+   Vector3D<fix_p> p1_pos = p0->getPos() + offset;
+   Particle<fix_p> *p1 = new Particle<fix_p>(p1_pos, 0, mass_p0, conF, dragF, randF);
+   Particle<fix_p> *p2 = new Particle<fix_p>(p1_pos + Vector3D<fix_p>(fix_p(0.0), fix_p(0.75), fix_p(0.0)), 0, mass_p0, conF, dragF, randF);
+   universe.addParticle(p0);
+   universe.addParticle(p1);
+   //universe.addParticle(p2);
 
-   // add orange oil 
-   for(int o_o=0; o_o<300; o_o++){
-       Particle<fixap<int32_t, 27>> *p = new Particle<fixap<int32_t,27>>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   //// add water
+   //for(int w=0; w<500; w++){
+   //    Particle<fix_p> *p = new Particle<fix_p>(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
+   //    universe.addParticle(p);
+   //}
+
+   //// add orange oil 
+   //for(int o_o=0; o_o<300; o_o++){
+   //    Particle<fix_p> *p = new Particle<fix_p>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
+   //    universe.addParticle(p);
+   //}
 
    //// add green oil 
-   for(int g_o=0; g_o<200; g_o++){
-       Particle<fixap<int32_t,27>> *p = new Particle<fixap<int32_t,27>>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   //for(int g_o=0; g_o<200; g_o++){
+   //    Particle<fix_p> *p = new Particle<fix_p>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
+   //    universe.addParticle(p);
+   //}
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");

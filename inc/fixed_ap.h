@@ -22,6 +22,12 @@ class fixap
         constexpr explicit fixap(float x) : _value(round(x * (1 << F))) { }
         constexpr explicit fixap(double x) : _value(round(x * (1 << F))) { }
 
+        // isZero returns true if this fixap number is zero
+        bool isZero() { return (this->_value == 0); }
+
+        // smallest returns the smallest value this number can represent
+        fixap<C,F> smallest() { C t = 1; fixap<C,F> tmp(t); return t; }
+
         // constructors
         fixap() : _value(0) {}
         fixap(uint8_t x)  : _value(x) {}
@@ -111,32 +117,50 @@ class fixap
         // division
         // uint8_t
         fixap<uint8_t,F> operator /(fixap<uint8_t,F> const& a){
-             return fixap<uint8_t, F>(((int16_t)this->_value *(1<<F))/(int16_t)a._value); 
+             fixap<uint8_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<uint8_t, F>(((int16_t)this->_value *(1<<F))/(int16_t)t._value); 
         }
 
         // uint16_t
         fixap<uint16_t,F> operator /(fixap<uint16_t,F> const& a){
-             return fixap<uint16_t, F>(((int32_t)this->_value *(1<<F))/(int32_t)a._value); 
+             fixap<uint16_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<uint16_t, F>(((int32_t)this->_value *(1<<F))/(int32_t)t._value); 
         }
         
         // uint32_t
         fixap<uint32_t,F> operator /(fixap<uint32_t,F> const& a){
-             return fixap<uint32_t, F>(((int64_t)this->_value *(1<<F))/(int64_t)a._value); 
+             fixap<uint32_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<uint32_t, F>(((int64_t)this->_value *(1<<F))/(int64_t)t._value); 
         }
         
         // int8_t
         fixap<int8_t,F> operator /(fixap<int8_t,F> const& a){
-             return fixap<int8_t, F>(((int16_t)this->_value *(1<<F))/(int16_t)a._value); 
+             fixap<int8_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<int8_t, F>(((int16_t)this->_value *(1<<F))/(int16_t)t._value); 
         }
 
         // int16_t
         fixap<int16_t,F> operator /(fixap<int16_t,F> const& a){
-             return fixap<int16_t, F>(((int32_t)this->_value *(1<<F))/(int32_t)a._value); 
+             fixap<int16_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<int16_t, F>(((int32_t)this->_value *(1<<F))/(int32_t)t._value); 
         }
         
         // int32_t
         fixap<int32_t,F> operator /(fixap<int32_t,F> const& a){
-             return fixap<int32_t, F>(((int64_t)this->_value *(1<<F))/(int64_t)a._value); 
+             fixap<int32_t,F> t = a;
+             if(t.isZero())
+                 t = t.smallest(); 
+             return fixap<int32_t, F>(((int64_t)this->_value *(1<<F))/(int64_t)t._value); 
         }
 
         // addition
@@ -208,25 +232,25 @@ fixap<int8_t,F> to_signed(fixap<uint8_t, F> x) { return fixap<int8_t,F>((int8_t)
 template<unsigned F>
 fixap<int64_t, F> sqrt(fixap<int64_t, F> in) {
     fixap<uint64_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(50));
+    return to_signed(t.sqrt(100));
 }
 
 template<unsigned F>
 fixap<int32_t, F> sqrt(fixap<int32_t, F> in) {
     fixap<uint32_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(50));
+    return to_signed(t.sqrt(100));
 }
 
 template<unsigned F>
 fixap<int16_t, F> sqrt(fixap<int16_t, F> in) {
     fixap<uint16_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(50));
+    return to_signed(t.sqrt(100));
 }
 
 template<unsigned F>
 fixap<int8_t, F> sqrt(fixap<int8_t, F> in) {
     fixap<uint8_t, F> t = to_unsigned(in);
-    return to_signed(t.sqrt(50));
+    return to_signed(t.sqrt(100));
 }
 
 //template<class C, unsigned F>
