@@ -1,5 +1,5 @@
 # Simple Dissipative Particle Dynamics (DPD) Simulator
-#### 0.0.1
+#### 0.2.0
 
 <p align="center">
     <img src="dpd_example.gif"/>
@@ -27,5 +27,6 @@ apt-get install nodejs
 ```
 
 ### changelog
-
+* 0.2.0 - templated for float/double/fixed-point-arithmetic implementations
+* 0.1.0 - bonded particles and cell-based simulation
 * 0.0.1 - initial release
