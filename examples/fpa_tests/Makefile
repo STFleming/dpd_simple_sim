@@ -14,7 +14,7 @@ replay:
 	nodejs $(LEVEL)/dpd-vis/visualiser.js 
 
 solve: $(OBJS) solve.cpp
-	g++ -std=c++11 -O2 -I $(LEVEL)/inc solve.cpp -o solve $(LEVEL)/bin/*.o -ljsoncpp
+	g++ -std=c++11 -O3 -I $(LEVEL)/inc solve.cpp -o solve $(LEVEL)/bin/*.o -ljsoncpp
 
 $(LEVEL)/bin/%.o: $(LEVEL)/src/%.cpp $(LEVEL)/inc/%.hpp
 	mkdir -p $(LEVEL)/bin

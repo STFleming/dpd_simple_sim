@@ -1,27 +1,31 @@
 // implementation file for the Vector3D class
 #include "Vector3D.hpp"
 
+#ifndef _VECTOR_3D_IMPL
+#define _VECTOR_3D_IMPL
+
 // constructor
-Vector3D::Vector3D(float x, float y, float z){
+template<class S>
+Vector3D<S>::Vector3D(S x, S y, S z){
    _x = x; 
    _y = y; 
    _z = z;
 }
 
 // default constructor
-Vector3D::Vector3D() {
-  _x = 0.0;
-  _y = 0.0;
-  _z = 0.0;
+template<class S>
+Vector3D<S>::Vector3D() {
 }
 
 // destructor
-Vector3D::~Vector3D() {
+template<class S>
+Vector3D<S>::~Vector3D() {
 
 }
 
 // copy constructor
-Vector3D::Vector3D(const Vector3D &in) {
+template<class S>
+Vector3D<S>::Vector3D(const Vector3D<S> &in) {
    _x = in._x;
    _y = in._y;
    _z = in._z;
@@ -29,24 +33,32 @@ Vector3D::Vector3D(const Vector3D &in) {
 
 
 // clears the vector
-void Vector3D::clear() {
+template<class S>
+void Vector3D<S>::clear() {
    _x = 0.0;
    _y = 0.0;
    _z = 0.0;
 }
 
 // getters
-float Vector3D::x() { return _x; }
-float Vector3D::y() { return _y; }
-float Vector3D::z() { return _z; }
+template<class S>
+S Vector3D<S>::x() { return _x; }
+template<class S>
+S Vector3D<S>::y() { return _y; }
+template<class S>
+S Vector3D<S>::z() { return _z; }
 
 // setters
-void Vector3D::x(float in) { _x = in; }
-void Vector3D::y(float in) { _y = in; }
-void Vector3D::z(float in) { _z = in; }
+template<class S>
+void Vector3D<S>::x(S in) { _x = in; }
+template<class S>
+void Vector3D<S>::y(S in) { _y = in; }
+template<class S>
+void Vector3D<S>::z(S in) { _z = in; }
 
 // setter
-void Vector3D::set(float x, float y, float z) {
+template<class S>
+void Vector3D<S>::set(S x, S y, S z) {
     _x = x;
     _y = y;
     _z = z;
@@ -55,212 +67,130 @@ void Vector3D::set(float x, float y, float z) {
 // operators
 //----------------------
 // vector * vector I don't think this is correct?
-Vector3D Vector3D::operator*(Vector3D const& a) {
-   Vector3D c;
-   float x =  this->_x * a._x;
-   float y =  this->_y * a._y;
-   float z =  this->_z * a._z;
+template<class S>
+Vector3D<S> Vector3D<S>::operator*(Vector3D<S> const& a) {
+   Vector3D<S> c;
+   S x =  this->_x * a._x;
+   S y =  this->_y * a._y;
+   S z =  this->_z * a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector * scalar
-Vector3D Vector3D::operator*(float const& a) {
+template<class S>
+Vector3D<S> Vector3D<S>::operator*(S const& a) {
    Vector3D c;
-   float x = this->_x * a;
-   float y = this->_y * a;
-   float z = this->_z * a;
+   S x = this->_x * a;
+   S y = this->_y * a;
+   S z = this->_z * a;
    c.set(x,y,z);
    return c;
 }
 
 // vector + vector
-Vector3D Vector3D::operator+(Vector3D const& a) {
-   Vector3D c;
-   float x =  this->_x  + a._x;
-   float y =  this->_y  + a._y;
-   float z =  this->_z  + a._z;
+template<class S>
+Vector3D<S> Vector3D<S>::operator+(Vector3D<S> const& a) {
+   Vector3D<S> c;
+   S x =  this->_x  + a._x;
+   S y =  this->_y  + a._y;
+   S z =  this->_z  + a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector + scalar
-Vector3D Vector3D::operator+(float const& a) {
-   Vector3D c;
-   float x = this->_x + a;
-   float y = this->_y + a;
-   float z = this->_z + a;
+template<class S>
+Vector3D<S> Vector3D<S>::operator+(S const& a) {
+   Vector3D<S> c;
+   S x = this->_x + a;
+   S y = this->_y + a;
+   S z = this->_z + a;
    c.set(x,y,z);
    return c;
 }
 
 // vector - vector
-Vector3D Vector3D::operator-(Vector3D const& a) {
-   Vector3D c;
-   float x = this->_x - a._x;
-   float y = this->_y - a._y;
-   float z = this->_z - a._z;
+template<class S>
+Vector3D<S> Vector3D<S>::operator-(Vector3D<S> const& a) {
+   Vector3D<S> c;
+   S x = this->_x - a._x;
+   S y = this->_y - a._y;
+   S z = this->_z - a._z;
    c.set(x,y,z);
    return c;
 }
 
 // vector - scalar
-Vector3D Vector3D::operator-(float const& a) {
-   Vector3D c;
-   float x = this->_x - a;
-   float y = this->_y - a;
-   float z = this->_z - a;
+template<class S>
+Vector3D<S> Vector3D<S>::operator-(S const& a) {
+   Vector3D<S> c;
+   S x = this->_x - a;
+   S y = this->_y - a;
+   S z = this->_z - a;
    c.set(x,y,z);
    return c;
 }
 
 // vector / scalar
-Vector3D Vector3D::operator/(float const& a) {
-   Vector3D c;
-   float x = this->_x / a;
-   float y = this->_y / a;
-   float z = this->_z / a;
+template<class S>
+Vector3D<S> Vector3D<S>::operator/(S const& a) {
+   Vector3D<S> c;
+   S x = this->_x / a;
+   S y = this->_y / a;
+   S z = this->_z / a;
    c.set(x,y,z);
    return c;
 }
 
 // dot product
-float Vector3D::dot(Vector3D a) {
+template<class S>
+S Vector3D<S>::dot(Vector3D<S> a) {
     return (_x * a.x()) + (_y * a.y()) + (_z * a.z());
 }
 
 // modulo add (based on the universe size)
-Vector3D Vector3D::modulo_add(Vector3D a, float N) {
+template<class S>
+Vector3D<float> Vector3D<S>::modulo_add(Vector3D<S> a, float N) {
     // add to the vector mod the universe size
-    float x = fmod(_x + a.x(), N); 
-    float y = fmod(_y + a.y(), N); 
-    float z = fmod(_z + a.z(), N); 
+    float x = fmod(_x + (float)a.x(), N); 
+    float y = fmod(_y + (float)a.y(), N); 
+    float z = fmod(_z + (float)a.z(), N); 
 
-    return Vector3D(x,y,z);
+    return Vector3D<float>(x,y,z);
 
-}
-
-// toroidal distance
-// returns this - a ( over a toroidal space NxNxN, where the cutoff is R_C)
-Vector3D Vector3D::toroidal_subtraction(Vector3D a, float N, float R_C) {
-
-  float diff_x = _x - a.x();
-  float diff_y = _y - a.y();
-  float diff_z = _z - a.z();
-
-  //if(diff_x > N/2){
-  //   diff_x = N - diff_x;     
-  //} else if (diff_x < -1.0*(N/2)) {
-  //   diff_x = N + diff_x;
-  //} 
-
-  //if(diff_y > N/2){
-  //  diff_y = N - diff_y;
-  //} else if (diff_y < -1.0*(N/2)) {
-  //   diff_y = N + diff_y;
-  //} 
-
-  //if(diff_z > N/2){
-  //  diff_z = N - diff_z;
-  //} else if (diff_z < -1.0*(N/2)) {
-  //   diff_z = N + diff_z;
-  //} 
-
-  if(diff_x >= R_C) {
-     diff_x = N - diff_x;
-  } else if (diff_x <= -1.0*R_C) {
-     diff_x = N + diff_x;
-  }
-
-  if(diff_y >= R_C) {
-    diff_y = N - diff_y;
-  } else if (diff_y <= -1.0*R_C) {
-    diff_y = N + diff_y;
-  }
-
-  if(diff_z >= R_C) {
-    diff_z = N - diff_z;
-  } else if (diff_z <= -1.0*R_C) {
-    diff_z = N + diff_z;
-  }
- 
-  return Vector3D(diff_x, diff_y, diff_z);  
 }
 
 // cross product
-Vector3D Vector3D::cross(Vector3D a){
-   Vector3D c;
-   float x = (_y*a.z()) - (_z*a.y()); 
-   float y = (_z*a.x()) - (_x*a.z()); 
-   float z = (_x*a.y()) - (_y*a.x()); 
+template<class S>
+Vector3D<S> Vector3D<S>::cross(Vector3D<S> a){
+   Vector3D<S> c;
+   S x = (_y*a.z()) - (_z*a.y()); 
+   S y = (_z*a.x()) - (_x*a.z()); 
+   S z = (_x*a.y()) - (_y*a.x()); 
    c.set(x,y,z);
    return c;
 }
 
 // mag
-float Vector3D::mag(){
+template<class S>
+S Vector3D<S>::mag(){
    return sqrt(_x*_x + _y*_y + _z*_z);
 } 
 
 // dist
-float Vector3D::dist(Vector3D a) {
-   Vector3D c = *this - a; 
+template<class S>
+S Vector3D<S>::dist(Vector3D<S> a) {
+   Vector3D<S> c = *this - a; 
    return c.mag();
 }
 
-// returns a direction mask (1 or -1) per dimension for whether or not it is crossing
-// a boundary.
-// this is because the force needs to move in the opposite direction across a boundary
-// It only really became noticeable for the bond force because they are so large 
-Vector3D Vector3D::direction_mask(Vector3D a, float N, float r_c) {
-    Vector3D mask;
-    float diff_x = fabs(a.x() - _x); 
-    float diff_y = fabs(a.y() - _y); 
-    float diff_z = fabs(a.z() - _z); 
-
-    if(diff_x >= N/2) 
-       mask.x(-1.0);    
-    else
-       mask.x(1.0);
-
-    if(diff_y >= N/2)
-       mask.y(-1.0);
-    else
-       mask.y(1.0);
-
-    if(diff_z >= N/2)
-       mask.z(-1.0);
-    else
-       mask.z(1.0);
-
-    return mask;
-}
-
-// calculate the toroidal distance
-float Vector3D::toroidal_dist(Vector3D a, float N) {
-
-    float dx = fabs(a.x() - _x);
-    float dy = fabs(a.y() - _y);
-    float dz = fabs(a.z() - _z);
-
-    if(dx >= (N/2)) {
-        dx = N - dx; 
-    }  
-
-    if(dy >= (N/2)) {
-        dy = N - dy; 
-    }  
-
-    if(dz >= (N/2)) {
-        dz = N - dz; 
-    }  
-
-    return sqrt(dx*dx + dy*dy + dz*dz);
-}
-
 // returns a formatted string
-std::string Vector3D::str(){
+template<class S>
+std::string Vector3D<S>::str(){
    std::stringstream ss;
-   ss << "<"<<x()<<", "<<y()<<", "<<z()<<">";
+   ss << "<"<<(float)x()<<", "<<(float)y()<<", "<<(float)z()<<">";
    return ss.str();
 }
+
+#endif /* _VECTOR_3D_IMPL */
