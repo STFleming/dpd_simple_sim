@@ -9,7 +9,7 @@
 #include "fixed_ap.h"
 #include <random>
 
-#define DELTA_T 0.02 
+#define DELTA_T 0.01 
 #define UNISIZE_D 10.0 // the size of a single dimension of the universe
 #define R_C 1.0 
 typedef float p_type;
@@ -132,28 +132,28 @@ int main() {
    // mass of the particles
    const p_type mass_p0(1.0);
 
-   const unsigned num_cubes = 2;
+   const unsigned num_cubes = 4;
    const p_type cube_size(unisize/num_cubes);
 
    SimSystem<p_type> universe(p_type(unisize), p_type(DELTA_T), p_type(R_C), num_cubes, 0);
 
    // add water
-   for(int w=0; w<500; w++){
+   for(int w=0; w<503; w++){
        Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 0, mass_p0, conF, dragF, randF);
        universe.addParticle(p);
    }
 
    // add orange oil 
-   //for(int o_o=0; o_o<300; o_o++){
-   //    Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
-   //    universe.addParticle(p);
-   //}
+   for(int o_o=0; o_o<700; o_o++){
+       Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
+       universe.addParticle(p);
+   }
 
-   //// add green oil 
-   //for(int g_o=0; g_o<200; g_o++){
-   //    Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
-   //    universe.addParticle(p);
-   //}
+   // add green oil 
+   for(int g_o=0; g_o<250; g_o++){
+       Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
+       universe.addParticle(p);
+   }
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
