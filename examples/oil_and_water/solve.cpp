@@ -144,16 +144,16 @@ int main() {
    }
 
    // add orange oil 
-   for(int o_o=0; o_o<300; o_o++){
-       Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   //for(int o_o=0; o_o<300; o_o++){
+   //    Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 1, mass_p0, conF, dragF, randF);
+   //    universe.addParticle(p);
+   //}
 
-   // add green oil 
-   for(int g_o=0; g_o<200; g_o++){
-       Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
-       universe.addParticle(p);
-   }
+   //// add green oil 
+   //for(int g_o=0; g_o<200; g_o++){
+   //    Particle<p_type> *p = new Particle<p_type>(rand2DPos(unisize), 2, mass_p0, conF, dragF, randF);
+   //    universe.addParticle(p);
+   //}
 
    // emit the state of the simulation
    universe.emitJSONFromSU("state.json");
